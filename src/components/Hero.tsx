@@ -1,7 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { NavigationTab } from '../types';
-import { Radio, ArrowRight } from 'lucide-react';
+import { Radio, ArrowRight, Volume2, VolumeX } from 'lucide-react';
 import { AnimatedHeading, FadeIn } from './motion/Animate';
+import { soundFx } from '../services/soundFx';
 
 /* ─── ASSETS ─────────────────────────────────────────────
    Using the exact CloudFront video from Prompts 2, 4, 6, 7
@@ -14,6 +15,7 @@ interface HeroProps {
 }
 
 export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
+  const [soundActive, setSoundActive] = useState<boolean>(false);
   /* ── Cursor spotlight (Prompt 3 Lithos mechanic) ── */
   const sectionRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -192,22 +194,31 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
             <FadeIn delay={1100} duration={900}>
               <div className="flex flex-wrap items-center gap-3 pt-2">
                 <button
-                  onClick={() => onNavigate('mission-control')}
-                  className="bg-white text-black px-7 py-3.5 rounded-full text-sm font-semibold tracking-wide hover:bg-cyan-50 active:scale-95 transition-all glow-btn flex items-center gap-2.5 shadow-lg shadow-white/10"
+                  onClick={() => {
+                    soundFx.playChime();
+                    onNavigate('mission-control');
+                  }}
+                  className="bg-white text-black px-7 py-3.5 rounded-full text-sm font-semibold tracking-wide hover:bg-cyan-50 active:scale-95 transition-all glow-btn flex items-center gap-2.5 shadow-lg shadow-white/10 cursor-pointer"
                 >
                   <Radio className="w-4 h-4 text-cyan-600 animate-pulse" />
                   Launch Mission Control
                 </button>
                 <button
-                  onClick={() => onNavigate('physics-lab')}
-                  className="glass border border-white/20 text-white px-7 py-3.5 rounded-full text-sm font-medium tracking-wide hover:bg-white hover:text-black active:scale-95 transition-all flex items-center gap-2"
+                  onClick={() => {
+                    soundFx.playTelemetryPing();
+                    onNavigate('physics-lab');
+                  }}
+                  className="glass border border-white/20 text-white px-7 py-3.5 rounded-full text-sm font-medium tracking-wide hover:bg-white hover:text-black active:scale-95 transition-all flex items-center gap-2 cursor-pointer"
                 >
                   128-D Physics Lab
                   <ArrowRight className="w-4 h-4" />
                 </button>
                 <button
-                  onClick={() => onNavigate('crises')}
-                  className="px-5 py-3.5 rounded-full text-sm font-mono text-cyan-400/90 hover:text-cyan-300 hover:bg-cyan-500/10 transition-colors flex items-center gap-2 border border-cyan-500/20"
+                  onClick={() => {
+                    soundFx.playTick();
+                    onNavigate('crises');
+                  }}
+                  className="px-5 py-3.5 rounded-full text-sm font-mono text-cyan-400/90 hover:text-cyan-300 hover:bg-cyan-500/10 transition-colors flex items-center gap-2 border border-cyan-500/20 cursor-pointer"
                 >
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
                   10 Crises Showcase
@@ -264,9 +275,39 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
 
         </div>
 
+        {/* Prompt 4 Serene style: Discreet bottom-left audio indicator */}
+        <div className="absolute bottom-6 left-6 md:left-12 z-30 hidden sm:flex items-center gap-3">
+          <button
+            onClick={() => {
+              const active = soundFx.toggleSound();
+              setSoundActive(active);
+            }}
+            className="w-9 h-9 rounded-full glass border border-white/20 flex items-center justify-center text-white/70 hover:text-white hover:border-white/40 transition-all cursor-pointer shadow-lg"
+            aria-label="Toggle ambient telemetry sound"
+          >
+            {soundActive ? (
+              <Volume2 className="w-4 h-4 text-cyan-400 animate-pulse" />
+            ) : (
+              <VolumeX className="w-4 h-4 text-white/40" />
+            )}
+          </button>
+          <div className="text-left font-mono text-[10px] leading-tight">
+            <p className="text-white/80 uppercase font-semibold">
+              {soundActive ? 'ISRO Soundscape: Active' : 'Sound: Muted'}
+            </p>
+            <p className="text-white/40">
+              {soundActive ? '55Hz Sub-Bass Telemetry Drone' : 'Click to enable tactile audio'}
+            </p>
+          </div>
+        </div>
+
         {/* Scroll indicator */}
         <FadeIn delay={1800} className="pb-6 flex justify-center">
-          <a href="#story" className="flex flex-col items-center gap-2 text-white/30 hover:text-white/60 transition-colors group">
+          <a
+            href="#story"
+            onClick={() => soundFx.playTick()}
+            className="flex flex-col items-center gap-2 text-white/30 hover:text-white/60 transition-colors group"
+          >
             <span className="text-[10px] font-mono tracking-[0.2em] uppercase">Scroll to reveal</span>
             <div className="w-5 h-8 rounded-full border border-white/20 flex items-start justify-center pt-1.5 group-hover:border-white/40 transition-colors">
               <div className="w-1 h-1.5 rounded-full bg-white/50 scroll-dot" />

@@ -74,6 +74,10 @@ export const MaskReveal: React.FC<MaskRevealProps> = ({ children, delay = 0, cla
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    if (typeof window === 'undefined' || !('IntersectionObserver' in window)) {
+      setVisible(true);
+      return;
+    }
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
@@ -82,7 +86,7 @@ export const MaskReveal: React.FC<MaskRevealProps> = ({ children, delay = 0, cla
           return () => clearTimeout(t);
         }
       },
-      { threshold: 0.1 }
+      { threshold: 0, rootMargin: '50px 0px -20px 0px' }
     );
     if (ref.current) observer.observe(ref.current);
     return () => observer.disconnect();
