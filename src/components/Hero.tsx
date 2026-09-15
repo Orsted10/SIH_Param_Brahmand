@@ -132,94 +132,132 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
         {/* Spacer to push content down */}
         <div className="flex-1" />
 
-        {/* Bottom section — 2 col grid like VEX */}
-        <div className="px-6 md:px-12 lg:px-16 pb-10 md:pb-14 lg:pb-16 grid grid-cols-1 lg:grid-cols-2 lg:items-end gap-8">
+        {/* Bottom section — 12-col grid for expansive cinematic breathing room */}
+        <div className="px-6 md:px-12 lg:px-16 pb-10 md:pb-14 lg:pb-16 grid grid-cols-1 lg:grid-cols-12 lg:items-end gap-8 lg:gap-12">
 
-          {/* LEFT — Main cinematic heading + CTAs */}
-          <div className="flex flex-col gap-6">
+          {/* LEFT — Main cinematic heading + CTAs (col-span-8) */}
+          <div className="lg:col-span-8 flex flex-col gap-5">
 
             {/* Eyebrow badge */}
             <FadeIn delay={100} y={12}>
-              <div className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full glass border border-white/15">
-                <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
-                <span className="text-[11px] font-mono font-semibold tracking-[0.18em] text-white/70 uppercase">
-                  ISRO SAC · PS 26167 · SatQuery AI
+              <div className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full glass border border-white/15 w-fit">
+                <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse shadow-[0_0_8px_#22d3ee]" />
+                <span className="text-[11px] font-mono font-semibold tracking-[0.2em] text-white/80 uppercase">
+                  ISRO SAC · PS 26167 · Sovereign Earth OS
                 </span>
               </div>
             </FadeIn>
 
-            {/* Sanskrit motto — Cinzel serif, mask reveal */}
-            <FadeIn delay={250} y={8}>
-              <p className="font-cinzel text-sm md:text-base text-amber-300/80 tracking-[0.08em] glow-gold">
+            {/* Sanskrit motto — Cinzel serif with gold glow */}
+            <FadeIn delay={220} y={8}>
+              <p className="font-cinzel text-sm md:text-base text-amber-300/90 tracking-[0.12em] glow-gold">
                 "विश्वं पश्यति चक्षुषा विज्ञानेन च युज्यते"
               </p>
             </FadeIn>
 
-            {/* VEX-style character animated main heading */}
-            <AnimatedHeading
-              lines={['PARAM', 'BRAHMAND']}
-              delay={200}
-              charDelay={35}
-              className="font-cinzel font-bold leading-none tracking-tight text-white glow-white"
-              style={{
-                fontSize: 'clamp(3.5rem, 9vw, 8.5rem)',
-                letterSpacing: '-0.025em',
-              } as React.CSSProperties}
-            />
+            {/* Main heading with unbreakable whiteSpace nowrap lines */}
+            <div className="overflow-visible">
+              <AnimatedHeading
+                lines={['PARAM', 'BRAHMAND']}
+                delay={200}
+                charDelay={30}
+                className="font-cinzel font-bold leading-[0.92] tracking-[0.02em] text-white glow-white select-none"
+                style={{
+                  fontSize: 'clamp(3.2rem, 7.2vw, 7.5rem)',
+                } as React.CSSProperties}
+              />
+            </div>
 
-            {/* Subheading — blur-up reveal */}
-            <FadeIn delay={900} duration={1000} y={16}>
+            {/* SpaceEdu signature cyan rule bar */}
+            <FadeIn delay={750} y={6}>
+              <div className="flex items-center gap-3 my-1">
+                <div className="w-24 h-1 rounded-full bg-cyan-400 shadow-[0_0_16px_rgba(6,182,212,0.9)]" />
+                <span className="font-mono text-[10px] tracking-[0.25em] text-cyan-400/80 uppercase font-semibold">
+                  128-D Physics Manifold · 9 AI Engines · 22 Languages
+                </span>
+              </div>
+            </FadeIn>
+
+            {/* Subheading */}
+            <FadeIn delay={900} duration={1000} y={14}>
               <p
-                className="text-white/60 font-light max-w-lg leading-relaxed"
-                style={{ fontSize: 'clamp(0.9rem, 1.4vw, 1.1rem)', fontFamily: "'Hanken Grotesk', system-ui, sans-serif" }}
+                className="text-white/70 font-light max-w-xl leading-relaxed"
+                style={{ fontSize: 'clamp(0.95rem, 1.4vw, 1.15rem)', fontFamily: "'Hanken Grotesk', system-ui, sans-serif" }}
               >
-                Sovereign multimodal Earth intelligence.<br />
-                128-D physics · 9 AI engines · 0% physical hallucination.
+                India's sovereign Earth intelligence foundation. Grounded in Navier-Stokes, Maxwell's SAR polarimetry, and Pearl causal DAGs — delivering certified 0% physical hallucination.
               </p>
             </FadeIn>
 
-            {/* CTA Buttons — Prompt 7 spec */}
-            <FadeIn delay={1200} duration={1000}>
-              <div className="flex flex-wrap items-center gap-3">
+            {/* CTA Buttons */}
+            <FadeIn delay={1100} duration={900}>
+              <div className="flex flex-wrap items-center gap-3 pt-2">
                 <button
                   onClick={() => onNavigate('mission-control')}
-                  className="bg-white text-black px-7 py-3 rounded-lg text-sm font-semibold tracking-wide hover:bg-white/90 active:scale-95 transition-all glow-btn flex items-center gap-2"
+                  className="bg-white text-black px-7 py-3.5 rounded-full text-sm font-semibold tracking-wide hover:bg-cyan-50 active:scale-95 transition-all glow-btn flex items-center gap-2.5 shadow-lg shadow-white/10"
                 >
-                  <Radio className="w-4 h-4" />
+                  <Radio className="w-4 h-4 text-cyan-600 animate-pulse" />
                   Launch Mission Control
                 </button>
                 <button
-                  onClick={() => onNavigate('crises')}
-                  className="glass border border-white/20 text-white px-7 py-3 rounded-lg text-sm font-medium tracking-wide hover:bg-white hover:text-black active:scale-95 transition-all flex items-center gap-2"
+                  onClick={() => onNavigate('physics-lab')}
+                  className="glass border border-white/20 text-white px-7 py-3.5 rounded-full text-sm font-medium tracking-wide hover:bg-white hover:text-black active:scale-95 transition-all flex items-center gap-2"
                 >
-                  View 10 Crises
+                  128-D Physics Lab
                   <ArrowRight className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => onNavigate('crises')}
+                  className="px-5 py-3.5 rounded-full text-sm font-mono text-cyan-400/90 hover:text-cyan-300 hover:bg-cyan-500/10 transition-colors flex items-center gap-2 border border-cyan-500/20"
+                >
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
+                  10 Crises Showcase
                 </button>
               </div>
             </FadeIn>
 
           </div>
 
-          {/* RIGHT — Stats tag (Prompt 7 glass card style) */}
-          <FadeIn delay={1400} duration={1000} className="hidden lg:flex justify-end items-end">
-            <div className="glass-dark border border-white/12 rounded-2xl px-6 py-5 max-w-xs w-full">
-              <p className="text-[10px] font-mono tracking-[0.2em] text-white/40 uppercase mb-3">Live System Metrics</p>
-              <div className="flex flex-col gap-3">
+          {/* RIGHT — Tactical Orbital Pass & Telemetry HUD (col-span-4) */}
+          <FadeIn delay={1300} duration={1000} className="lg:col-span-4 flex flex-col justify-end">
+            <div className="glass-dark border border-white/15 rounded-2xl p-5 w-full shadow-2xl relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-500/10 rounded-full blur-2xl pointer-events-none" />
+              
+              {/* HUD Header */}
+              <div className="flex items-center justify-between pb-3 mb-3 border-b border-white/10">
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_#34d399]" />
+                  <span className="text-[10px] font-mono tracking-[0.2em] text-white/80 uppercase font-bold">
+                    ISRO Telemetry Feed
+                  </span>
+                </div>
+                <span className="text-[10px] font-mono text-cyan-400/80 bg-cyan-950/60 px-2 py-0.5 rounded border border-cyan-500/30">
+                  LIVE 45 FPS
+                </span>
+              </div>
+
+              {/* HUD Metrics List */}
+              <div className="flex flex-col gap-3 font-mono">
                 {[
-                  { label: 'Computational Speed', value: '380 ms', sub: '@ 45 FPS', color: '#06b6d4' },
-                  { label: 'SAR Cloud Penetration', value: '97.2%', sub: 'Precision', color: '#fbbf24' },
-                  { label: 'Hallucination Rate', value: '0.00%', sub: 'Certified', color: '#10b981' },
+                  { label: 'Active Satellites', value: 'Cartosat-3 · RISAT-1A', sub: 'NISAR Sync', color: '#06b6d4' },
+                  { label: 'Spectral Ingestion', value: '128 / 128 Channels', sub: 'Wave Manifold', color: '#38bdf8' },
+                  { label: 'Inference Latency', value: '380 ms', sub: 'Geo-Mamba 3.0', color: '#34d399' },
+                  { label: 'Conformal Coverage', value: '≥ 98.4%', sub: 'p-val > 0.99', color: '#fbbf24' },
+                  { label: 'Dharma Firewall', value: '0.00% Violations', sub: 'Certified', color: '#a855f7' },
                 ].map((stat, i) => (
-                  <div key={i} className="flex items-center justify-between">
-                    <div>
-                      <p className="text-[11px] text-white/40 font-mono">{stat.label}</p>
-                    </div>
+                  <div key={i} className="flex items-center justify-between text-xs py-1 border-b border-white/5 last:border-0">
+                    <span className="text-white/50 text-[11px]">{stat.label}</span>
                     <div className="text-right">
-                      <span className="text-base font-bold font-mono" style={{ color: stat.color }}>{stat.value}</span>
-                      <span className="text-[10px] text-white/30 font-mono ml-1">{stat.sub}</span>
+                      <span className="font-bold text-[12px]" style={{ color: stat.color }}>{stat.value}</span>
+                      <span className="text-[10px] text-white/30 ml-1.5 hidden sm:inline">{stat.sub}</span>
                     </div>
                   </div>
                 ))}
+              </div>
+
+              {/* Target Coordinates */}
+              <div className="mt-3 pt-2.5 border-t border-white/10 flex items-center justify-between text-[10px] font-mono text-white/40">
+                <span>COORD: 21°08'45"N 79°05'18"E</span>
+                <span className="text-emerald-400/80">ORBIT 14A PASS</span>
               </div>
             </div>
           </FadeIn>

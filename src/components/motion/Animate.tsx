@@ -33,7 +33,7 @@ export const AnimatedHeading: React.FC<AnimatedHeadingProps> = ({
       {lines.map((line, li) => {
         const chars = Array.from(line);
         return (
-          <div key={li} className="overflow-hidden block">
+          <div key={li} className="overflow-hidden block" style={{ whiteSpace: 'nowrap' }}>
             {chars.map((ch, ci) => {
               const idx = globalIndex++;
               const charMs = delay + idx * charDelay;
