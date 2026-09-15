@@ -1,2 +1,6 @@
-.rocketride/
+node_modules/
+dist/
 .env
+.rocketride/
+.DS_Store
+*.log
