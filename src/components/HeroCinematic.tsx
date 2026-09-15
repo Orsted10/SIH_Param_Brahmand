@@ -3,6 +3,12 @@ import { NavigationTab } from '../types';
 import { NAVAGRAHA_ENGINES } from '../data/crisesData';
 import { ScrollReveal } from './ScrollReveal';
 import { 
+  SatelliteBlueprint, 
+  VisualComparator, 
+  DharmaChakraWheel, 
+  NavagrahaOrbitalSystem 
+} from './BlueprintDrawings';
+import { 
   ShieldCheck, 
   Cpu, 
   Radio, 
@@ -11,20 +17,13 @@ import {
   ChevronDown, 
   ArrowRight, 
   CheckCircle2, 
-  XCircle, 
   Eye, 
-  Globe, 
   FileText,
-  Clock,
   Activity,
   Zap,
   Award,
-  RefreshCw,
-  Sliders,
-  Flame,
   Droplets,
-  Building2,
-  Navigation
+  RefreshCw
 } from 'lucide-react';
 
 interface HeroProps {
@@ -34,7 +33,6 @@ interface HeroProps {
 export const HeroCinematic: React.FC<HeroProps> = ({ onNavigate }) => {
   const [mousePos, setMousePos] = useState({ x: -999, y: -999 });
   const [activeLayerIndex, setActiveLayerIndex] = useState<number>(0);
-  const [activeBottleneckTab, setActiveBottleneckTab] = useState<number>(0);
   const [activeNavagrahaFilter, setActiveNavagrahaFilter] = useState<'all' | 'radar' | 'optical' | 'causal' | 'disaster'>('all');
   
   const heroRef = useRef<HTMLDivElement>(null);
@@ -49,90 +47,55 @@ export const HeroCinematic: React.FC<HeroProps> = ({ onNavigate }) => {
     });
   };
 
-  const bottlenecks = [
-    {
-      id: 0,
-      title: '"RGB-Only" Physics Blindness',
-      icon: <Eye className="w-5 h-5 text-cyan-400" />,
-      statusQuo: 'Treats satellite scenes like 3-color smartphone photos, discarding 85% of radar polarimetry & multispectral data.',
-      solution: 'Prakriti-Veda ingests a 128-D physics manifold (Yamaguchi AG4U + RVoG PolInSAR + MESMA) directly into neural layers.',
-      stat: '128-D Physics Manifold'
-    },
-    {
-      id: 1,
-      title: 'O(N²) Attention Memory Crash',
-      icon: <Cpu className="w-5 h-5 text-amber-400" />,
-      statusQuo: 'Standard Vision Transformers explode in quadratic O(N²) memory (34 GB VRAM crash on 4096x4096 tiles).',
-      solution: 'Geo-Mamba 3.0 16-directional Hamiltonian scanning runs in strictly linear O(L) time (1.2 GB VRAM at 45 FPS).',
-      stat: 'Linear O(L) Time'
-    },
-    {
-      id: 2,
-      title: 'Monsoon Cloud & Canopy Blindness',
-      icon: <Droplets className="w-5 h-5 text-blue-400" />,
-      statusQuo: 'Optical space cameras are 100% blinded by storm clouds; flood water under tree cover is completely unseen.',
-      solution: 'Kaal-Radar applies RISAT-1A C/L-band radar polarimetry (RVoG) to penetrate clouds and tree canopies in 380 ms.',
-      stat: '97.2% SAR Precision'
-    },
-    {
-      id: 3,
-      title: 'Pseudo-Change False Alarms',
-      icon: <RefreshCw className="w-5 h-5 text-emerald-400" />,
-      statusQuo: 'Pixel differencing confuses natural seasonal monsoon greening or wheat harvesting with real human deforestation.',
-      solution: 'Vivek-Causal uses Judea Pearl SCM do-calculus DAGs to isolate true human actions (p > 0.99), suppressing 94.8% false alarms.',
-      stat: '94.8% False Alarm Suppression'
-    }
-  ];
-
   const layerStack = [
     { 
       layerNum: 7,
       name: 'Bhasha-Brahmand Sovereign VIVA Engine', 
       tag: '22 Indian Languages',
       color: 'from-amber-500 to-isro-saffron',
-      desc: 'Voice-In/Voice-Out in 22 scheduled Indian languages using AI4Bharat IndicConformer + IndicTrans2, preserving agricultural terms (Kharif, Rabi, Taluk, Nullah) in under 350 ms.' 
+      desc: 'Voice-In/Voice-Out in 22 scheduled Indian languages using AI4Bharat IndicConformer + IndicTrans2 in < 350 ms.' 
     },
     { 
       layerNum: 6,
       name: 'Dharma-Chakra Hard Physics Firewall', 
       tag: '0% Physical Hallucination',
       color: 'from-cyan-500 to-blue-600',
-      desc: 'Deterministic gatekeeper enforcing 4 physical conservation laws: Stokes energy <= incident, standing water slope <= 5.0°, SAR specular backscatter, and albedo bounds.' 
+      desc: 'Deterministic gatekeeper enforcing Stokes energy, slope <= 5.0°, SAR specular backscatter, and albedo bounds.' 
     },
     { 
       layerNum: 5,
       name: 'GeoCP-v2 Spatial Conformal Calibration', 
       tag: '>= 95% Coverage Guarantee',
       color: 'from-purple-500 to-pink-600',
-      desc: 'Solves spatial autocorrelation non-exchangeability using distance-decay Moran\'s I kernels, guaranteeing >= 95% ground truth coverage with ECE = 2.4%.' 
+      desc: 'Solves spatial autocorrelation using distance-decay Moran\'s I kernels, guaranteeing >= 95% coverage with ECE = 2.4%.' 
     },
     { 
       layerNum: 4,
       name: 'Navagraha Specialist AI Ensemble', 
       tag: '9 Dedicated Specialists',
       color: 'from-emerald-500 to-teal-600',
-      desc: '9 domain-expert AI engines (Bhoomi-Optical, Kaal-Radar, Surya-Caption, Sparsh-Grounding, etc.) preventing single-model performance bottlenecks.' 
+      desc: '9 domain-expert AI engines (Bhoomi, Kaal, Surya, Sparsh, etc.) eliminating single-model performance bottlenecks.' 
     },
     { 
       layerNum: 3,
       name: 'Sankalpa-Param MCTS Dynamic Router', 
       tag: 'Auditable JSON Trace',
       color: 'from-blue-600 to-indigo-700',
-      desc: 'LangGraph state machine with Monte Carlo Tree Search query planning emitting standardized JSON execution traces strictly matching ISRO SAC PS 26167.' 
+      desc: 'Monte Carlo Tree Search query planner emitting standardized JSON execution traces for ISRO SAC PS 26167.' 
     },
     { 
       layerNum: 2,
       name: 'Geo-Mamba 3.0 Linear Backbone', 
       tag: '380 ms at 45 FPS',
       color: 'from-cyan-400 to-emerald-500',
-      desc: '16-Directional Hamiltonian continuous state-space model executing 4K satellite tiles in linear O(L) time with SIRTI scale-invariant token injection.' 
+      desc: '16-Directional continuous state-space model executing 4K satellite tiles in linear O(L) time.' 
     },
     { 
       layerNum: 1,
       name: 'Prakriti-Veda 128-D Physics Manifold', 
       tag: '128-Point Wave Matrix',
       color: 'from-amber-400 to-orange-500',
-      desc: 'Ingests Yamaguchi AG4U 4-component radar scattering, PolInSAR RVoG 3D tree height, MESMA sub-pixel unmixing, and 16 color/wave health indices.' 
+      desc: 'Ingests Yamaguchi AG4U radar scattering, PolInSAR RVoG 3D tree height, MESMA sub-pixel unmixing.' 
     }
   ];
 
@@ -149,7 +112,7 @@ export const HeroCinematic: React.FC<HeroProps> = ({ onNavigate }) => {
     <div className="relative w-full bg-space-950 overflow-hidden">
       
       {/* ========================================================================= */}
-      {/* PROLOGUE: CINEMATIC SPACE HERO SECTION */}
+      {/* PROLOGUE: CINEMATIC SPACE HERO SECTION (Kept Intact) */}
       {/* ========================================================================= */}
       <section 
         ref={heroRef}
@@ -166,7 +129,7 @@ export const HeroCinematic: React.FC<HeroProps> = ({ onNavigate }) => {
           src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260613_180732_a54afbf6-b30d-470e-861f-669871f09f67.mp4"
         />
 
-        {/* Cursor Spotlight Lens Mask (Prompt 3 Lithos Mechanics) */}
+        {/* Cursor Spotlight Lens Mask */}
         <div 
           className="absolute inset-0 z-10 pointer-events-none opacity-85 hidden md:block"
           style={{
@@ -193,7 +156,7 @@ export const HeroCinematic: React.FC<HeroProps> = ({ onNavigate }) => {
             </div>
           </ScrollReveal>
 
-          {/* Regal Sanskrit Motto (Prompt 7 Line Mask Reveal) */}
+          {/* Regal Sanskrit Motto */}
           <ScrollReveal variant="fade-up" delay={200}>
             <h3 className="font-cinzel text-xl sm:text-2xl md:text-3xl text-isro-saffron tracking-wider font-bold mb-3 text-glow-gold">
               "विश्वं पश्यति चक्षुषा विज्ञानेन च युज्यते"
@@ -276,7 +239,7 @@ export const HeroCinematic: React.FC<HeroProps> = ({ onNavigate }) => {
 
 
       {/* ========================================================================= */}
-      {/* ACT I: THE SOVEREIGN MANDATE (ISRO SAC PS 26167) */}
+      {/* ACT I: THE SOVEREIGN MANDATE (VISUAL BLUEPRINT ENGINE) */}
       {/* ========================================================================= */}
       <section id="act-1" className="py-24 px-4 md:px-12 lg:px-16 max-w-7xl mx-auto border-b border-white/10">
         <ScrollReveal variant="fade-up">
@@ -286,174 +249,130 @@ export const HeroCinematic: React.FC<HeroProps> = ({ onNavigate }) => {
           </div>
         </ScrollReveal>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-          <div className="lg:col-span-7 flex flex-col gap-5">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+          
+          {/* Left Text Column: Punchy Visual Badges, No Walls of Text */}
+          <div className="lg:col-span-7 flex flex-col gap-6">
             <ScrollReveal variant="slide-right" delay={150}>
               <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white tracking-tight leading-tight">
-                ISRO SAC Problem Statement 26167: <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-isro-saffron">SatQuery AI</span>
+                ISRO SAC Problem Statement 26167: <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-emerald-300 to-isro-saffron">SatQuery AI</span>
               </h2>
             </ScrollReveal>
 
-            <ScrollReveal variant="fade-up" delay={300}>
-              <p className="text-sm md:text-base text-gray-300 leading-relaxed font-grotesk">
-                The Indian Space Research Organisation (ISRO) Space Applications Centre (SAC), Ahmedabad, mandated an interactive platform for space scientists, NDMA commanders, forest rangers, and rural citizens to interrogate satellite imagery using natural language (including 22 Indian languages).
-              </p>
-            </ScrollReveal>
-
-            {/* Interactive Input Scopes Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
-              <ScrollReveal variant="zoom-in" delay={450}>
-                <div className="liquid-glass p-5 rounded-2xl border border-cyan-500/30 hover:border-cyan-400 transition-all hover:scale-105">
-                  <span className="text-xs font-mono font-bold text-cyan-400 uppercase block mb-1">Scope 1: Single Image VQA</span>
-                  <p className="text-xs text-gray-300">Single Optical or SAR scene for Visual Question Answering, 4-Tier Captioning, and Sub-pixel Grounding.</p>
+            {/* Graphic Input Scopes */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <ScrollReveal variant="zoom-in" delay={300}>
+                <div className="liquid-glass-strong p-5 rounded-2xl border border-cyan-500/40 hover:scale-105 transition-all flex items-start gap-3">
+                  <Eye className="w-6 h-6 text-cyan-400 flex-none mt-1" />
+                  <div>
+                    <span className="text-xs font-mono font-bold text-cyan-300 uppercase block mb-1">Scope 1: Single Scene VQA</span>
+                    <span className="text-xs text-gray-300">Visual question answering, 4-tier captioning & sub-pixel grounding on 0.28m imagery.</span>
+                  </div>
                 </div>
               </ScrollReveal>
 
-              <ScrollReveal variant="zoom-in" delay={600}>
-                <div className="liquid-glass p-5 rounded-2xl border border-amber-500/30 hover:border-amber-400 transition-all hover:scale-105">
-                  <span className="text-xs font-mono font-bold text-amber-400 uppercase block mb-1">Scope 2: Bi-Temporal Pair</span>
-                  <p className="text-xs text-gray-300">Two spatially aligned images taken at different dates (T1 and T2) for change detection & change masks.</p>
+              <ScrollReveal variant="zoom-in" delay={450}>
+                <div className="liquid-glass-strong p-5 rounded-2xl border border-amber-500/40 hover:scale-105 transition-all flex items-start gap-3">
+                  <Activity className="w-6 h-6 text-amber-400 flex-none mt-1" />
+                  <div>
+                    <span className="text-xs font-mono font-bold text-amber-300 uppercase block mb-1">Scope 2: Bi-Temporal Pair</span>
+                    <span className="text-xs text-gray-300">Dual-date aligned image comparison (T1 vs T2) generating high-res spatial change masks.</span>
+                  </div>
                 </div>
               </ScrollReveal>
             </div>
+
+            {/* 4 SIH Mandatory Pillars */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div className="liquid-glass p-3 rounded-xl border border-white/10 text-center">
+                <span className="text-[10px] text-gray-400 block mb-1">Pillar 1</span>
+                <strong className="text-xs text-emerald-400 block font-mono">RS Fine-Tuning</strong>
+              </div>
+              <div className="liquid-glass p-3 rounded-xl border border-white/10 text-center">
+                <span className="text-[10px] text-gray-400 block mb-1">Pillar 2</span>
+                <strong className="text-xs text-cyan-400 block font-mono">4-Tier Captions</strong>
+              </div>
+              <div className="liquid-glass p-3 rounded-xl border border-white/10 text-center">
+                <span className="text-[10px] text-gray-400 block mb-1">Pillar 3</span>
+                <strong className="text-xs text-amber-400 block font-mono">Bi-Temporal Mask</strong>
+              </div>
+              <div className="liquid-glass p-3 rounded-xl border border-white/10 text-center">
+                <span className="text-[10px] text-gray-400 block mb-1">Pillar 5</span>
+                <strong className="text-xs text-purple-400 block font-mono">JSON Execution</strong>
+              </div>
+            </div>
           </div>
 
+          {/* Right Column: Google Blueprint Satellite Vector Illustration */}
           <div className="lg:col-span-5">
             <ScrollReveal variant="slide-left" delay={300}>
-              <div className="liquid-glass-strong rounded-3xl p-6 border border-cyan-500/40 shadow-2xl flex flex-col gap-4">
-                <div className="flex items-center gap-2 pb-3 border-b border-white/10">
-                  <ShieldCheck className="w-5 h-5 text-cyan-400" />
-                  <h4 className="font-bold text-white text-base">Mandatory SIH 2026 Pillars</h4>
-                </div>
-
-                <div className="space-y-3.5 text-xs">
-                  <div className="flex items-start gap-3">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-none mt-0.5" />
-                    <div>
-                      <strong className="text-white">Pillar 1: Remote Sensing Adaptation:</strong> Model fine-tuned on remote sensing datasets (BigEarthNet.txt).
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-none mt-0.5" />
-                    <div>
-                      <strong className="text-white">Pillar 2: Single-Image Baseline:</strong> Mandatory VQA + 4-tier captioning.
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-none mt-0.5" />
-                    <div>
-                      <strong className="text-white">Pillar 3: Bi-Temporal Change Analysis:</strong> High-resolution spatial change masks.
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-none mt-0.5" />
-                    <div>
-                      <strong className="text-white">Pillar 5: Auditable Execution Trace:</strong> Standardized JSON trace for every decision.
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <SatelliteBlueprint activeScope={1} />
             </ScrollReveal>
           </div>
+
         </div>
       </section>
 
 
       {/* ========================================================================= */}
-      {/* ACT II: WHY STANDARD AI FAILS IN SPACE (INTERACTIVE FLIP CARDS) */}
+      {/* ACT II: WHY STANDARD AI FAILS IN SPACE (VISUAL COMPARATOR) */}
       {/* ========================================================================= */}
       <section className="py-24 px-4 md:px-12 lg:px-16 max-w-7xl mx-auto border-b border-white/10">
         <ScrollReveal variant="fade-up">
           <div className="story-badge">
             <Zap className="w-4 h-4 text-amber-400" />
-            <span>ACT II: THE 8 BOTTLENECKS & THE BREAKTHROUGH</span>
+            <span>ACT II: VISUAL COMPARATIVE ANALYSIS</span>
           </div>
         </ScrollReveal>
 
         <div className="text-center max-w-3xl mx-auto mb-12">
           <ScrollReveal variant="fade-up" delay={150}>
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white tracking-tight mb-4">
-              Why Standard AI Fails in Space & How <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-emerald-400">PARAM-BRAHMAND Solves It</span>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white tracking-tight mb-3">
+              Why Standard AI Fails & How <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-emerald-400">We Fix It</span>
             </h2>
-            <p className="text-sm text-gray-400 font-mono">
-              Click any bottleneck card below to switch between "Status Quo Failure" and "PARAM-BRAHMAND Fix".
+            <p className="text-xs md:text-sm text-gray-400 font-mono">
+              Click the 4 innovations below to inspect interactive visual metrics comparing legacy models vs PARAM-BRAHMAND.
             </p>
           </ScrollReveal>
         </div>
 
-        {/* Interactive Bottleneck Selector */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {bottlenecks.map((b, idx) => {
-            const isSelected = activeBottleneckTab === b.id;
-            return (
-              <ScrollReveal key={b.id} variant="zoom-in" delay={idx * 150}>
-                <div 
-                  onClick={() => setActiveBottleneckTab(b.id)}
-                  className={`liquid-glass-strong rounded-3xl p-6 border cursor-pointer transition-all ${
-                    isSelected ? 'border-cyan-400 shadow-2xl scale-[1.02]' : 'border-white/10 hover:border-white/30'
-                  }`}
-                >
-                  <div className="flex items-center justify-between mb-4 pb-3 border-b border-white/10">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 rounded-xl bg-space-950 border border-white/10">
-                        {b.icon}
-                      </div>
-                      <h4 className="font-bold text-base text-white">{b.title}</h4>
-                    </div>
-                    <span className="text-[10px] font-mono font-bold text-cyan-300 bg-cyan-500/20 px-2.5 py-1 rounded-full border border-cyan-500/40">
-                      {b.stat}
-                    </span>
-                  </div>
-
-                  <div className="space-y-3 text-xs">
-                    <div className="bg-red-950/20 border border-red-500/30 p-3.5 rounded-2xl">
-                      <strong className="text-red-400 block mb-1">✘ What Fails Today (Status Quo):</strong>
-                      <span className="text-gray-300 leading-relaxed">{b.statusQuo}</span>
-                    </div>
-
-                    <div className="bg-emerald-950/20 border border-emerald-500/30 p-3.5 rounded-2xl">
-                      <strong className="text-emerald-400 block mb-1">✔ PARAM-BRAHMAND Solution:</strong>
-                      <span className="text-gray-300 leading-relaxed">{b.solution}</span>
-                    </div>
-                  </div>
-                </div>
-              </ScrollReveal>
-            );
-          })}
-        </div>
+        {/* Visual Dual Meter Comparator Component */}
+        <ScrollReveal variant="zoom-in" delay={300}>
+          <VisualComparator />
+        </ScrollReveal>
       </section>
 
 
       {/* ========================================================================= */}
-      {/* ACT III: THE 7-LAYER INTEGRATED SYSTEM STACK */}
+      {/* ACT III: THE 7-LAYER SYSTEM ARCHITECTURE */}
       {/* ========================================================================= */}
       <section className="py-24 px-4 md:px-12 lg:px-16 max-w-7xl mx-auto border-b border-white/10">
         <ScrollReveal variant="fade-up">
           <div className="story-badge">
             <Layers className="w-4 h-4 text-emerald-400" />
-            <span>ACT III: THE 7-LAYER SYSTEM ARCHITECTURE</span>
+            <span>ACT III: 7-LAYER OPERATING SYSTEM ARCHITECTURE</span>
           </div>
         </ScrollReveal>
 
         <div className="text-center max-w-3xl mx-auto mb-12">
           <ScrollReveal variant="fade-up" delay={150}>
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white tracking-tight mb-4">
-              Integrated Earth Intelligence Operating System
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white tracking-tight mb-3">
+              Integrated Earth Intelligence Stack
             </h2>
-            <p className="text-sm md:text-base text-gray-300">
-              Click any layer below to inspect its operational mechanics and scientific algorithms.
+            <p className="text-xs md:text-sm text-gray-400 font-mono">
+              Select any layer to inspect its operational mechanics and scientific algorithms.
             </p>
           </ScrollReveal>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
           
-          {/* Layer Pyramid List (6 Cols) */}
+          {/* Layer Selection Pyramid (6 Cols) */}
           <div className="lg:col-span-6 flex flex-col gap-2.5">
             {layerStack.map((layer, idx) => {
               const isSelected = activeLayerIndex === idx;
               return (
-                <ScrollReveal key={idx} variant="slide-right" delay={idx * 100}>
+                <ScrollReveal key={idx} variant="slide-right" delay={idx * 80}>
                   <div
                     onClick={() => setActiveLayerIndex(idx)}
                     className={`p-4 rounded-2xl cursor-pointer transition-all border ${
@@ -464,7 +383,7 @@ export const HeroCinematic: React.FC<HeroProps> = ({ onNavigate }) => {
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <span className="w-6 h-6 rounded-full bg-space-950 border border-cyan-400/40 text-cyan-300 text-xs font-mono font-bold flex items-center justify-center">
+                        <span className="w-7 h-7 rounded-full bg-space-950 border border-cyan-400/40 text-cyan-300 text-xs font-mono font-bold flex items-center justify-center">
                           L{layer.layerNum}
                         </span>
                         <span className="font-bold text-xs sm:text-sm text-white">{layer.name}</span>
@@ -479,13 +398,13 @@ export const HeroCinematic: React.FC<HeroProps> = ({ onNavigate }) => {
             })}
           </div>
 
-          {/* Active Layer Details Card (6 Cols) */}
-          <div className="lg:col-span-6">
+          {/* Active Layer Graphic Card & Wheel (6 Cols) */}
+          <div className="lg:col-span-6 flex flex-col items-center gap-6">
             <ScrollReveal variant="zoom-in" delay={300}>
-              <div className="liquid-glass-strong rounded-3xl p-6 border border-cyan-500/40 shadow-2xl flex flex-col gap-5">
+              <div className="liquid-glass-strong rounded-3xl p-6 border border-cyan-500/40 shadow-2xl flex flex-col gap-5 w-full">
                 <div className="flex items-center justify-between pb-3 border-b border-white/10">
                   <span className="text-xs font-mono font-bold text-cyan-400 uppercase tracking-widest">
-                    LAYER {layerStack[activeLayerIndex].layerNum} OPERATIONAL MECHANICS
+                    LAYER {layerStack[activeLayerIndex].layerNum} MECHANICS
                   </span>
                   <span className="text-xs font-mono font-bold text-amber-300 bg-amber-500/20 px-2.5 py-0.5 rounded-full border border-amber-500/40">
                     {layerStack[activeLayerIndex].tag}
@@ -495,9 +414,17 @@ export const HeroCinematic: React.FC<HeroProps> = ({ onNavigate }) => {
                 <h3 className="text-2xl font-bold text-white">
                   {layerStack[activeLayerIndex].name}
                 </h3>
+                
                 <p className="text-xs sm:text-sm text-gray-200 leading-relaxed bg-space-950/80 p-4 rounded-2xl border border-white/10 font-mono">
                   {layerStack[activeLayerIndex].desc}
                 </p>
+
+                {/* Dharma Chakra Graphic for Layer 6 */}
+                {layerStack[activeLayerIndex].layerNum === 6 && (
+                  <div className="py-2">
+                    <DharmaChakraWheel />
+                  </div>
+                )}
 
                 <button
                   onClick={() => onNavigate('physics-lab')}
@@ -515,13 +442,13 @@ export const HeroCinematic: React.FC<HeroProps> = ({ onNavigate }) => {
 
 
       {/* ========================================================================= */}
-      {/* ACT IV: THE 9 NAVAGRAHA ENGINES (FILTERABLE CAROUSEL GRID) */}
+      {/* ACT IV: THE 9 NAVAGRAHA ENGINES (INTERACTIVE ORBITAL SYSTEM) */}
       {/* ========================================================================= */}
       <section className="py-24 px-4 md:px-12 lg:px-16 max-w-7xl mx-auto border-b border-white/10">
         <ScrollReveal variant="fade-up">
           <div className="story-badge">
             <Cpu className="w-4 h-4 text-purple-400" />
-            <span>ACT IV: THE 9 NAVAGRAHA SPECIALIST ENGINES</span>
+            <span>ACT IV: 9 NAVAGRAHA SPECIALIST AI ENGINES</span>
           </div>
         </ScrollReveal>
 
@@ -530,8 +457,8 @@ export const HeroCinematic: React.FC<HeroProps> = ({ onNavigate }) => {
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white tracking-tight">
               Domain Specialist AI Ensemble
             </h2>
-            <p className="text-sm text-gray-300 mt-1">
-              9 dedicated Navagraha specialist engines ensure every query is handled by an expert system.
+            <p className="text-xs md:text-sm text-gray-300 mt-1 font-mono">
+              9 dedicated Navagraha engines eliminate single-model bottlenecks. Hover over nodes to inspect.
             </p>
           </div>
 
@@ -572,34 +499,38 @@ export const HeroCinematic: React.FC<HeroProps> = ({ onNavigate }) => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredNavagraha.map((engine, idx) => (
-            <ScrollReveal key={engine.id} variant="zoom-in" delay={idx * 100}>
-              <div className="liquid-glass-strong rounded-3xl p-5 border border-white/10 flex flex-col justify-between gap-4 shadow-xl hover:border-cyan-400/50 hover:scale-[1.02] transition-all">
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-[10px] font-mono font-bold text-amber-400 bg-amber-500/10 px-2.5 py-0.5 rounded-full border border-amber-500/30">
+        {/* Interactive Orbital Solar System + Concise Engine Chips */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+          
+          <div className="lg:col-span-6">
+            <ScrollReveal variant="zoom-in" delay={200}>
+              <NavagrahaOrbitalSystem />
+            </ScrollReveal>
+          </div>
+
+          <div className="lg:col-span-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {filteredNavagraha.slice(0, 6).map((engine, idx) => (
+              <ScrollReveal key={engine.id} variant="zoom-in" delay={idx * 80}>
+                <div className="liquid-glass-strong rounded-2xl p-4 border border-white/10 flex flex-col justify-between gap-2 shadow-lg hover:border-cyan-400/50 hover:scale-[1.02] transition-all">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-mono font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/30">
                       {engine.deityAnalogy}
                     </span>
                     <span className="text-[10px] font-mono text-emerald-300 font-bold">{engine.accuracy}</span>
                   </div>
-                  <h4 className="font-bold text-lg text-white mb-1">{engine.name}</h4>
-                  <span className="text-xs text-cyan-300 font-mono block mb-2">{engine.role}</span>
-                  <p className="text-xs text-gray-300 leading-relaxed">{engine.description}</p>
+                  <h4 className="font-bold text-sm text-white">{engine.name}</h4>
+                  <span className="text-[11px] text-cyan-300 font-mono">{engine.role}</span>
                 </div>
+              </ScrollReveal>
+            ))}
+          </div>
 
-                <div className="pt-3 border-t border-white/10 text-[10px] font-mono text-gray-400">
-                  Sensors: {engine.sensor}
-                </div>
-              </div>
-            </ScrollReveal>
-          ))}
         </div>
       </section>
 
 
       {/* ========================================================================= */}
-      {/* ACT V: LIVE SANDBOX LAUNCHER */}
+      {/* ACT V: LIVE MACHINE LAUNCHER */}
       {/* ========================================================================= */}
       <section className="py-24 px-4 md:px-12 lg:px-16 text-center max-w-4xl mx-auto">
         <ScrollReveal variant="zoom-in">
@@ -612,7 +543,7 @@ export const HeroCinematic: React.FC<HeroProps> = ({ onNavigate }) => {
             Ready to Interrogate <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-500 to-isro-saffron">Space Imagery?</span>
           </h2>
 
-          <p className="text-sm md:text-base text-gray-300 max-w-2xl mx-auto mb-8 font-grotesk">
+          <p className="text-xs md:text-sm text-gray-300 max-w-2xl mx-auto mb-8 font-grotesk">
             Launch our live interactive Mission Control dashboard to test split-screen bi-temporal swipes, spotlight polarimetry lenses, and 22-language vernacular voice queries.
           </p>
 
