@@ -15,12 +15,12 @@ export default {
           700: '#1e293b',
         },
         isro: {
-          saffron: '#FF9933',
-          navy: '#000080',
-          cyan: '#00F0FF',
-          emerald: '#10B981',
-          gold: '#F59E0B',
-          purple: '#A855F7'
+          saffron: '#d97706',
+          navy: '#1e3a8a',
+          cyan: '#0891b2',
+          emerald: '#059669',
+          gold: '#b45309',
+          purple: '#7e22ce'
         }
       },
       fontFamily: {
@@ -32,16 +32,10 @@ export default {
         mono: ['JetBrains Mono', 'Fira Code', 'monospace']
       },
       animation: {
-        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
         'spin-slow': 'spin 25s linear infinite',
-        'glow': 'glow 3s ease-in-out infinite alternate',
         'float': 'float 6s ease-in-out infinite',
       },
       keyframes: {
-        glow: {
-          '0%': { boxShadow: '0 0 20px rgba(0, 240, 255, 0.2)' },
-          '100%': { boxShadow: '0 0 45px rgba(0, 240, 255, 0.7)' },
-        },
         float: {
           '0%, 100%': { transform: 'translateY(0px)' },
           '50%': { transform: 'translateY(-12px)' },

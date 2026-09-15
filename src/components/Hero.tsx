@@ -100,9 +100,9 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
         src={HERO_VIDEO}
       />
 
-      {/* ── Dark gradient overlays ── */}
-      <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/40 to-black/85 z-10 pointer-events-none" />
-      <div className="absolute inset-0 bg-gradient-to-r from-black/40 via-transparent to-black/20 z-10 pointer-events-none" />
+      {/* ── Dark gradient overlays (Muted for realism) ── */}
+      <div className="absolute inset-0 bg-black/60 z-10 pointer-events-none" />
+      <div className="absolute inset-0 bg-gradient-to-r from-space-950/80 via-transparent to-black/20 z-10 pointer-events-none" />
 
       {/* ── Spotlight reveal layer (Lithos) ── */}
       <canvas ref={canvasRef} className="absolute inset-0 z-0 pointer-events-none" style={{ display: 'none' }} />
@@ -142,17 +142,17 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
 
             {/* Eyebrow badge */}
             <FadeIn delay={100} y={12}>
-              <div className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full glass border border-white/15 w-fit">
-                <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse shadow-[0_0_8px_#22d3ee]" />
-                <span className="text-[11px] font-mono font-semibold tracking-[0.2em] text-white/80 uppercase">
+              <div className="inline-flex items-center gap-2.5 px-4 py-2 bg-space-900/80 border border-white/10 w-fit">
+                <span className="w-1.5 h-1.5 bg-cyan-500" />
+                <span className="text-[10px] font-mono font-bold tracking-[0.2em] text-white/70 uppercase">
                   ISRO SAC · PS 26167 · Sovereign Earth OS
                 </span>
               </div>
             </FadeIn>
 
-            {/* Sanskrit motto — Cinzel serif with gold glow */}
+            {/* Sanskrit motto — Cinzel serif */}
             <FadeIn delay={220} y={8}>
-              <p className="font-cinzel text-sm md:text-base text-amber-300/90 tracking-[0.12em] glow-gold">
+              <p className="font-cinzel text-sm md:text-base text-white/60 tracking-[0.12em]">
                 "विश्वं पश्यति चक्षुषा विज्ञानेन च युज्यते"
               </p>
             </FadeIn>
@@ -163,18 +163,18 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
                 lines={['PARAM', 'BRAHMAND']}
                 delay={200}
                 charDelay={30}
-                className="font-cinzel font-bold leading-[0.92] tracking-[0.02em] text-white glow-white select-none"
+                className="font-cinzel font-bold leading-[0.92] tracking-[0.02em] text-white select-none"
                 style={{
                   fontSize: 'clamp(3.2rem, 7.2vw, 7.5rem)',
                 } as React.CSSProperties}
               />
             </div>
 
-            {/* SpaceEdu signature cyan rule bar */}
+            {/* Technical Signature */}
             <FadeIn delay={750} y={6}>
               <div className="flex items-center gap-3 my-1">
-                <div className="w-24 h-1 rounded-full bg-cyan-400 shadow-[0_0_16px_rgba(6,182,212,0.9)]" />
-                <span className="font-mono text-[10px] tracking-[0.25em] text-cyan-400/80 uppercase font-semibold">
+                <div className="w-16 h-[1px] bg-white/40" />
+                <span className="font-mono text-[10px] tracking-[0.25em] text-white/50 uppercase font-bold">
                   128-D Physics Manifold · 9 AI Engines · 22 Languages
                 </span>
               </div>
@@ -192,15 +192,15 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
 
             {/* CTA Buttons */}
             <FadeIn delay={1100} duration={900}>
-              <div className="flex flex-wrap items-center gap-3 pt-2">
+              <div className="flex flex-wrap items-center gap-3 pt-2 font-mono">
                 <button
                   onClick={() => {
                     soundFx.playChime();
                     onNavigate('mission-control');
                   }}
-                  className="bg-white text-black px-7 py-3.5 rounded-full text-sm font-semibold tracking-wide hover:bg-cyan-50 active:scale-95 transition-all glow-btn flex items-center gap-2.5 shadow-lg shadow-white/10 cursor-pointer"
+                  className="bg-white text-space-950 px-6 py-3 text-[11px] uppercase font-bold tracking-widest hover:bg-white/90 transition-all flex items-center gap-2 cursor-pointer border border-white"
                 >
-                  <Radio className="w-4 h-4 text-cyan-600 animate-pulse" />
+                  <Radio className="w-3 h-3" />
                   Launch Mission Control
                 </button>
                 <button
@@ -208,19 +208,19 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
                     soundFx.playTelemetryPing();
                     onNavigate('physics-lab');
                   }}
-                  className="glass border border-white/20 text-white px-7 py-3.5 rounded-full text-sm font-medium tracking-wide hover:bg-white hover:text-black active:scale-95 transition-all flex items-center gap-2 cursor-pointer"
+                  className="bg-space-900/60 border border-white/20 text-white px-6 py-3 text-[11px] uppercase font-bold tracking-widest hover:bg-space-800 transition-all flex items-center gap-2 cursor-pointer"
                 >
                   128-D Physics Lab
-                  <ArrowRight className="w-4 h-4" />
+                  <ArrowRight className="w-3 h-3" />
                 </button>
                 <button
                   onClick={() => {
                     soundFx.playTick();
                     onNavigate('crises');
                   }}
-                  className="px-5 py-3.5 rounded-full text-sm font-mono text-cyan-400/90 hover:text-cyan-300 hover:bg-cyan-500/10 transition-colors flex items-center gap-2 border border-cyan-500/20 cursor-pointer"
+                  className="px-6 py-3 text-[11px] uppercase font-bold tracking-widest text-cyan-500 hover:text-cyan-400 transition-colors flex items-center gap-2 cursor-pointer"
                 >
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
+                  <span className="w-1.5 h-1.5 bg-emerald-600" />
                   10 Crises Showcase
                 </button>
               </div>
@@ -230,18 +230,17 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
 
           {/* RIGHT — Tactical Orbital Pass & Telemetry HUD (col-span-4) */}
           <FadeIn delay={1300} duration={1000} className="lg:col-span-4 flex flex-col justify-end">
-            <div className="glass-dark border border-white/15 rounded-2xl p-5 w-full shadow-2xl relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-500/10 rounded-full blur-2xl pointer-events-none" />
+            <div className="bg-space-950/80 backdrop-blur-md border border-white/10 p-5 w-full relative overflow-hidden">
               
               {/* HUD Header */}
               <div className="flex items-center justify-between pb-3 mb-3 border-b border-white/10">
                 <div className="flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_#34d399]" />
-                  <span className="text-[10px] font-mono tracking-[0.2em] text-white/80 uppercase font-bold">
+                  <span className="w-1.5 h-1.5 bg-emerald-500" />
+                  <span className="text-[10px] font-mono tracking-[0.2em] text-white/70 uppercase font-bold">
                     ISRO Telemetry Feed
                   </span>
                 </div>
-                <span className="text-[10px] font-mono text-cyan-400/80 bg-cyan-950/60 px-2 py-0.5 rounded border border-cyan-500/30">
+                <span className="text-[9px] font-mono text-cyan-500 border border-cyan-500/30 px-1.5 py-0.5">
                   LIVE 45 FPS
                 </span>
               </div>
@@ -249,11 +248,11 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
               {/* HUD Metrics List */}
               <div className="flex flex-col gap-3 font-mono">
                 {[
-                  { label: 'Active Satellites', value: 'Cartosat-3 · RISAT-1A', sub: 'NISAR Sync', color: '#06b6d4' },
-                  { label: 'Spectral Ingestion', value: '128 / 128 Channels', sub: 'Wave Manifold', color: '#38bdf8' },
-                  { label: 'Inference Latency', value: '380 ms', sub: 'Geo-Mamba 3.0', color: '#34d399' },
-                  { label: 'Conformal Coverage', value: '≥ 98.4%', sub: 'p-val > 0.99', color: '#fbbf24' },
-                  { label: 'Dharma Firewall', value: '0.00% Violations', sub: 'Certified', color: '#a855f7' },
+                  { label: 'Active Satellites', value: 'Cartosat-3 · RISAT-1A', sub: 'NISAR Sync', color: '#cbd5e1' },
+                  { label: 'Spectral Ingestion', value: '128 / 128 Channels', sub: 'Wave Manifold', color: '#94a3b8' },
+                  { label: 'Inference Latency', value: '380 ms', sub: 'Geo-Mamba 3.0', color: '#059669' },
+                  { label: 'Conformal Coverage', value: '≥ 98.4%', sub: 'p-val > 0.99', color: '#d97706' },
+                  { label: 'Dharma Firewall', value: '0.00% Violations', sub: 'Certified', color: '#0891b2' },
                 ].map((stat, i) => (
                   <div key={i} className="flex items-center justify-between text-xs py-1 border-b border-white/5 last:border-0">
                     <span className="text-white/50 text-[11px]">{stat.label}</span>

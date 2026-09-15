@@ -110,16 +110,13 @@ const SectionHumanGroundTruth: React.FC<{ onNavigate: (tab: NavigationTab) => vo
   return (
     <section
       id="story"
-      className="relative min-h-screen flex flex-col justify-center overflow-hidden py-24 px-6 md:px-12 lg:px-16"
-      style={{
-        background: 'radial-gradient(ellipse 90% 70% at 20% 30%, rgba(56,189,248,0.04) 0%, #020408 75%)',
-      }}
+      className="relative min-h-screen flex flex-col justify-center overflow-hidden py-24 px-6 md:px-12 lg:px-16 bg-space-950"
     >
       <div className="relative z-10 max-w-7xl mx-auto w-full">
         {/* Eyebrow */}
         <FadeIn delay={50}>
           <div className="flex items-center gap-3 mb-4">
-            <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse shadow-[0_0_8px_#38bdf8]" />
+            <span className="w-1.5 h-1.5 bg-cyan-500" />
             <p className="font-mono text-[11px] font-bold tracking-[0.25em] text-white/50 uppercase">
               ACT I · THE HUMAN GROUND TRUTH
             </p>
@@ -161,7 +158,7 @@ const SectionHumanGroundTruth: React.FC<{ onNavigate: (tab: NavigationTab) => vo
                   soundFx.playTick();
                   setActiveVoice(idx);
                 }}
-                className={`p-4 rounded-2xl text-left transition-all duration-300 border flex flex-col justify-between gap-2 cursor-pointer ${
+                className={`p-4 rounded-sm text-left transition-all duration-300 border flex flex-col justify-between gap-2 cursor-pointer ${
                   activeVoice === idx
                     ? 'bg-white/10 border-white/30 shadow-xl scale-[1.01]'
                     : 'bg-white/2 border-white/8 hover:border-white/20 hover:bg-white/4 text-white/60'
@@ -189,7 +186,7 @@ const SectionHumanGroundTruth: React.FC<{ onNavigate: (tab: NavigationTab) => vo
 
         {/* Tactical Voice Console */}
         <FadeIn delay={450}>
-          <div className="glass-dark border border-white/12 rounded-3xl p-6 lg:p-10 relative overflow-hidden shadow-2xl">
+          <div className="bg-space-900 border border-white/10 rounded-none p-6 lg:p-10 relative overflow-hidden ">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
               {/* Left: Vernacular Query & Spoken Waveform */}
               <div className="lg:col-span-7 flex flex-col gap-5">
@@ -207,7 +204,7 @@ const SectionHumanGroundTruth: React.FC<{ onNavigate: (tab: NavigationTab) => vo
                 </div>
 
                 {/* Spoken Citizen Voice Query */}
-                <div className="p-5 rounded-2xl bg-white/3 border border-white/8 relative overflow-hidden">
+                <div className="p-5 rounded-sm bg-white/3 border border-white/8 relative overflow-hidden">
                   <div className="flex items-center justify-between mb-3">
                     <span className="text-[10px] font-mono text-cyan-300 font-bold uppercase tracking-wider">
                       Live Spoken Audio Query ({current.language})
@@ -216,7 +213,7 @@ const SectionHumanGroundTruth: React.FC<{ onNavigate: (tab: NavigationTab) => vo
                     {/* Audio Play Button */}
                     <button
                       onClick={handleTogglePlay}
-                      className="px-3 py-1 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-400/30 text-xs font-mono flex items-center gap-1.5 hover:bg-cyan-500/30 transition-all cursor-pointer"
+                      className="px-3 py-1 rounded-none bg-cyan-500/20 text-cyan-300 border border-cyan-400/30 text-xs font-mono flex items-center gap-1.5 hover:bg-cyan-500/30 transition-all cursor-pointer"
                     >
                       {isPlayingAudio ? (
                         <>
@@ -243,7 +240,7 @@ const SectionHumanGroundTruth: React.FC<{ onNavigate: (tab: NavigationTab) => vo
                   </p>
 
                   {/* Animated Soundwave Bar Graphic */}
-                  <div className="mt-4 pt-3 border-t border-white/5 flex items-center gap-1 h-6">
+                  <div className="mt-4 pt-3 border-t border-white/5 flex items-end gap-[2px] h-8">
                     {Array.from({ length: 36 }).map((_, i) => {
                       const waveHeight = isPlayingAudio
                         ? 15 + Math.sin(i * 0.5 + Date.now() * 0.005) * 70 + (i % 4) * 8
@@ -251,7 +248,7 @@ const SectionHumanGroundTruth: React.FC<{ onNavigate: (tab: NavigationTab) => vo
                       return (
                         <div
                           key={i}
-                          className="flex-1 bg-cyan-400/60 rounded-full transition-all duration-150"
+                          className="flex-1 bg-cyan-400/60 rounded-none transition-all duration-150"
                           style={{
                             height: `${Math.min(100, Math.max(10, waveHeight))}%`,
                             opacity: isPlayingAudio ? 0.9 : 0.25,
@@ -270,7 +267,7 @@ const SectionHumanGroundTruth: React.FC<{ onNavigate: (tab: NavigationTab) => vo
               </div>
 
               {/* Right: Physics Grounded Advisory Delivered to Citizen */}
-              <div className="lg:col-span-5 flex flex-col justify-between gap-5 p-6 rounded-2xl bg-black/40 border border-white/10 h-full">
+              <div className="lg:col-span-5 flex flex-col justify-between gap-5 p-6 rounded-sm bg-black/40 border border-white/10 h-full">
                 <div>
                   <div className="flex items-center gap-2 mb-2 text-emerald-400 text-xs font-mono font-bold">
                     <ShieldCheck className="w-4 h-4" />
@@ -281,12 +278,12 @@ const SectionHumanGroundTruth: React.FC<{ onNavigate: (tab: NavigationTab) => vo
                     Calculated Physical Ground Truth
                   </h4>
 
-                  <p className="text-xs font-mono text-white/70 leading-relaxed bg-white/3 p-3.5 rounded-xl border border-white/5 mb-4">
+                  <p className="text-xs font-mono text-white/70 leading-relaxed bg-white/3 p-3.5 rounded-sm border border-white/5 mb-4">
                     {current.physicsResponse}
                   </p>
 
                   {/* Vernacular Return Audio / SMS Output */}
-                  <div className="p-3.5 rounded-xl bg-cyan-950/20 border border-cyan-500/20">
+                  <div className="p-3.5 rounded-sm bg-cyan-950/20 border border-cyan-500/20">
                     <span className="text-[10px] font-mono text-cyan-300 uppercase tracking-wider block mb-1">
                       Citizen Broadcast ({current.language.split('(')[0]}):
                     </span>
@@ -301,7 +298,7 @@ const SectionHumanGroundTruth: React.FC<{ onNavigate: (tab: NavigationTab) => vo
                     soundFx.playChime();
                     onNavigate('mission-control');
                   }}
-                  className="w-full py-3 rounded-xl bg-white text-black text-xs font-mono font-bold hover:bg-cyan-50 transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md"
+                  className="w-full py-3 rounded-sm bg-white text-black text-xs font-mono font-bold hover:bg-cyan-50 transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md"
                 >
                   <Radio className="w-3.5 h-3.5 text-cyan-600" />
                   Test Live Vernacular Query in Mission Control
@@ -370,15 +367,12 @@ const SectionRealityPeeler: React.FC = () => {
 
   return (
     <section
-      className="relative min-h-screen flex flex-col justify-center overflow-hidden py-24 px-6 md:px-12 lg:px-16"
-      style={{
-        background: 'radial-gradient(ellipse 90% 70% at 80% 40%, rgba(56,189,248,0.03) 0%, #020408 75%)',
-      }}
+      className="relative min-h-screen flex flex-col justify-center overflow-hidden py-24 px-6 md:px-12 lg:px-16 bg-space-950"
     >
       <div className="relative z-10 max-w-7xl mx-auto w-full">
         <FadeIn delay={50}>
           <div className="flex items-center gap-3 mb-4">
-            <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse shadow-[0_0_8px_#38bdf8]" />
+            <span className="w-1.5 h-1.5 bg-cyan-500" />
             <p className="font-mono text-[11px] font-bold tracking-[0.25em] text-white/50 uppercase">
               ACT II · TACTILE MULTI-SPECTRAL PEELER
             </p>
@@ -419,7 +413,7 @@ const SectionRealityPeeler: React.FC = () => {
                   soundFx.playTick();
                   setPeelLayer(idx);
                 }}
-                className={`p-3.5 rounded-2xl text-left font-mono text-xs transition-all border flex flex-col justify-between gap-1.5 cursor-pointer ${
+                className={`p-3.5 rounded-sm text-left font-mono text-xs transition-all border flex flex-col justify-between gap-1.5 cursor-pointer ${
                   peelLayer === idx
                     ? 'bg-white/10 border-white/30 shadow-lg scale-[1.01]'
                     : 'bg-white/2 border-white/8 hover:border-white/20 text-white/50'
@@ -438,10 +432,10 @@ const SectionRealityPeeler: React.FC = () => {
 
         {/* The Peeler Canvas Terminal */}
         <FadeIn delay={400}>
-          <div className="glass-dark border border-white/12 rounded-3xl p-6 lg:p-8 relative overflow-hidden shadow-2xl">
+          <div className="bg-space-900 border border-white/10 rounded-none p-6 lg:p-8 relative overflow-hidden ">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
               {/* Satellite Image Display */}
-              <div className="lg:col-span-7 relative rounded-2xl overflow-hidden aspect-[16/10] border border-white/15">
+              <div className="lg:col-span-7 relative rounded-sm overflow-hidden aspect-[16/10] border border-white/15">
                 <img
                   src={current.bgImg}
                   alt={current.label}
@@ -454,16 +448,16 @@ const SectionRealityPeeler: React.FC = () => {
                 <div
                   className="absolute inset-0 pointer-events-none opacity-50"
                   style={{
-                    background: 'linear-gradient(180deg, transparent 0%, rgba(56,189,248,0.2) 50%, rgba(56,189,248,0.7) 51%, transparent 52%)',
+                    background: 'linear-gradient(180deg, transparent 0%, rgba(255,255,255,0.05) 50%, rgba(255,255,255,0.15) 51%, transparent 52%)',
                     backgroundSize: '100% 200%',
                     animation: 'float 5s ease-in-out infinite',
                   }}
                 />
 
                 {/* Bounding Box HUD */}
-                <div className="absolute top-6 left-6 p-3 rounded-xl bg-black/70 backdrop-blur-md border border-white/15 max-w-xs text-xs font-mono">
+                <div className="absolute top-6 left-6 p-3 rounded-sm bg-black/70 backdrop-blur-md border border-white/15 max-w-xs text-xs font-mono">
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: current.color }} />
+                    <span className="w-1.5 h-1.5 rounded-none" style={{ backgroundColor: current.color }} />
                     <span className="font-bold text-white">{current.sensor}</span>
                   </div>
                   <p className="text-[10px] text-white/50">{current.wavelength}</p>
@@ -497,7 +491,7 @@ const SectionRealityPeeler: React.FC = () => {
                     {current.label}
                   </h3>
                   <div
-                    className="p-4 rounded-xl border text-xs font-mono leading-relaxed mb-4"
+                    className="p-4 rounded-sm border text-xs font-mono leading-relaxed mb-4"
                     style={{
                       backgroundColor: `${current.color}10`,
                       borderColor: `${current.color}35`,
@@ -511,7 +505,7 @@ const SectionRealityPeeler: React.FC = () => {
                   </p>
                 </div>
 
-                <div className="p-4 rounded-xl bg-white/3 border border-white/8 text-xs font-mono text-white/60 flex items-center justify-between">
+                <div className="p-4 rounded-sm bg-white/3 border border-white/8 text-xs font-mono text-white/60 flex items-center justify-between">
                   <span>Sensor Sync: 128 Channels</span>
                   <span className="text-emerald-400 font-bold">100% Ingested</span>
                 </div>
@@ -588,15 +582,12 @@ const SectionTimeScrubber: React.FC<{ onNavigate: (tab: NavigationTab) => void }
 
   return (
     <section
-      className="relative min-h-screen flex flex-col justify-center overflow-hidden py-24 px-6 md:px-12 lg:px-16"
-      style={{
-        background: 'radial-gradient(ellipse 90% 70% at 30% 60%, rgba(56,189,248,0.03) 0%, #020408 75%)',
-      }}
+      className="relative min-h-screen flex flex-col justify-center overflow-hidden py-24 px-6 md:px-12 lg:px-16 bg-space-950"
     >
       <div className="relative z-10 max-w-7xl mx-auto w-full">
         <FadeIn delay={50}>
           <div className="flex items-center gap-3 mb-4">
-            <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse shadow-[0_0_8px_#38bdf8]" />
+            <span className="w-1.5 h-1.5 bg-cyan-500" />
             <p className="font-mono text-[11px] font-bold tracking-[0.25em] text-white/50 uppercase">
               ACT III · 24-HOUR DISASTER TIME SCRUBBER
             </p>
@@ -629,7 +620,7 @@ const SectionTimeScrubber: React.FC<{ onNavigate: (tab: NavigationTab) => void }
 
         {/* Interactive Timeline Scrubber Widget */}
         <FadeIn delay={350}>
-          <div className="glass-dark border border-white/12 rounded-3xl p-6 lg:p-10 relative overflow-hidden shadow-2xl">
+          <div className="bg-space-900 border border-white/10 rounded-none p-6 lg:p-10 relative overflow-hidden ">
             {/* Scrubber Slider Bar */}
             <div className="mb-8">
               <div className="flex justify-between items-center text-xs font-mono text-white/50 mb-3">
@@ -690,11 +681,11 @@ const SectionTimeScrubber: React.FC<{ onNavigate: (tab: NavigationTab) => void }
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
-                  <div className="p-4 rounded-xl bg-white/3 border border-white/8 font-mono">
+                  <div className="p-4 rounded-sm bg-white/3 border border-white/8 font-mono">
                     <span className="text-[10px] text-white/40 uppercase block mb-1">Inundated Area</span>
                     <span className="text-2xl font-bold text-cyan-300">{current.inundation}</span>
                   </div>
-                  <div className="p-4 rounded-xl bg-white/3 border border-white/8 font-mono">
+                  <div className="p-4 rounded-sm bg-white/3 border border-white/8 font-mono">
                     <span className="text-[10px] text-white/40 uppercase block mb-1">Flow Velocity</span>
                     <span className="text-2xl font-bold text-amber-300">{current.waterSpeed}</span>
                   </div>
@@ -706,13 +697,13 @@ const SectionTimeScrubber: React.FC<{ onNavigate: (tab: NavigationTab) => void }
               </div>
 
               {/* Right Column: Automated Citizen Broadcast */}
-              <div className="lg:col-span-6 flex flex-col justify-between gap-4 p-6 rounded-2xl bg-black/40 border border-white/10">
+              <div className="lg:col-span-6 flex flex-col justify-between gap-4 p-6 rounded-sm bg-black/40 border border-white/10">
                 <div className="flex items-center gap-2 text-xs font-mono text-cyan-300 font-bold">
                   <Clock className="w-3.5 h-3.5" />
                   AUTOMATED STATE DISASTER BULLETIN DISPATCHED
                 </div>
 
-                <div className="p-4 rounded-xl bg-white/4 border border-white/8 text-xs font-sans leading-relaxed text-white/90">
+                <div className="p-4 rounded-sm bg-white/4 border border-white/8 text-xs font-sans leading-relaxed text-white/90">
                   {current.bulletin}
                 </div>
 
@@ -744,15 +735,12 @@ const SectionTimeScrubber: React.FC<{ onNavigate: (tab: NavigationTab) => void }
 const SectionBlueprintCAD: React.FC<{ onNavigate: (tab: NavigationTab) => void }> = ({ onNavigate }) => {
   return (
     <section
-      className="relative min-h-screen flex flex-col justify-center overflow-hidden py-24 px-6 md:px-12 lg:px-16"
-      style={{
-        background: 'radial-gradient(ellipse 90% 70% at 70% 50%, rgba(56,189,248,0.03) 0%, #020408 75%)',
-      }}
+      className="relative min-h-screen flex flex-col justify-center overflow-hidden py-24 px-6 md:px-12 lg:px-16 bg-space-950"
     >
       <div className="relative z-10 max-w-7xl mx-auto w-full">
         <FadeIn delay={50}>
           <div className="flex items-center gap-3 mb-4">
-            <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse shadow-[0_0_8px_#38bdf8]" />
+            <span className="w-1.5 h-1.5 bg-cyan-500" />
             <p className="font-mono text-[11px] font-bold tracking-[0.25em] text-white/50 uppercase">
               ACT IV · SATELLITE VECTOR BLUEPRINT
             </p>
@@ -795,7 +783,7 @@ const SectionBlueprintCAD: React.FC<{ onNavigate: (tab: NavigationTab) => void }
           {/* Right: Dharma Chakra Mathematical Wheel & Technical Narrative */}
           <div className="lg:col-span-6 flex flex-col gap-6">
             <FadeIn delay={450}>
-              <div className="glass-dark border border-white/12 rounded-3xl p-6 lg:p-8 relative overflow-hidden shadow-2xl flex flex-col gap-5">
+              <div className="bg-space-900 border border-white/10 rounded-none p-6 lg:p-8 relative overflow-hidden  flex flex-col gap-5">
                 <div className="flex items-center justify-between pb-3 border-b border-white/10">
                   <span className="text-xs font-mono font-bold text-cyan-300 uppercase tracking-wider">
                     DHARMA-CHAKRA ANTI-HALLUCINATION WHEEL
@@ -944,15 +932,12 @@ const SectionNavagrahaTactile: React.FC = () => {
 
   return (
     <section
-      className="relative min-h-screen flex flex-col justify-center overflow-hidden py-24 px-6 md:px-12 lg:px-16"
-      style={{
-        background: 'radial-gradient(ellipse 90% 70% at 50% 60%, rgba(192,132,252,0.03) 0%, #020408 75%)',
-      }}
+      className="relative min-h-screen flex flex-col justify-center overflow-hidden py-24 px-6 md:px-12 lg:px-16 bg-space-950"
     >
       <div className="relative z-10 max-w-7xl mx-auto w-full">
         <FadeIn delay={50}>
           <div className="flex items-center gap-3 mb-4">
-            <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse shadow-[0_0_8px_#38bdf8]" />
+            <span className="w-1.5 h-1.5 bg-cyan-500" />
             <p className="font-mono text-[11px] font-bold tracking-[0.25em] text-white/50 uppercase">
               ACT V · 9 NAVAGRAHA COSMIC SPECIALISTS
             </p>
@@ -995,9 +980,9 @@ const SectionNavagrahaTactile: React.FC = () => {
                     soundFx.playTick();
                     setActiveEngine(isSelected ? null : i);
                   }}
-                  className={`p-6 rounded-2xl border transition-all duration-300 cursor-pointer relative overflow-hidden flex flex-col justify-between h-full ${
+                  className={`p-6 rounded-sm border transition-all duration-300 cursor-pointer relative overflow-hidden flex flex-col justify-between h-full ${
                     isSelected
-                      ? 'bg-white/10 border-white/35 shadow-2xl scale-[1.01]'
+                      ? 'bg-white/10 border-white/35  scale-[1.01]'
                       : 'bg-white/2 border-white/8 hover:border-white/20 hover:bg-white/4'
                   }`}
                   style={{
@@ -1010,7 +995,7 @@ const SectionNavagrahaTactile: React.FC = () => {
                         {eng.num}
                       </span>
                       <div
-                        className="p-2 rounded-xl"
+                        className="p-2 rounded-sm"
                         style={{
                           backgroundColor: `${eng.color}15`,
                           color: eng.color,
@@ -1059,21 +1044,18 @@ const SectionNavagrahaTactile: React.FC = () => {
 ────────────────────────────────────────────────────────── */
 const SectionFinale: React.FC<{ onNavigate: (tab: NavigationTab) => void }> = ({ onNavigate }) => (
   <section
-    className="relative min-h-screen flex flex-col items-center justify-center text-center overflow-hidden py-24 px-6 md:px-12 lg:px-16"
-    style={{
-      background: 'radial-gradient(ellipse 90% 70% at 50% 60%, rgba(56,189,248,0.06) 0%, #020408 80%)',
-    }}
+    className="relative min-h-screen flex flex-col items-center justify-center text-center overflow-hidden py-24 px-6 md:px-12 lg:px-16 bg-space-950"
   >
     {/* Concentric Orbital Rings */}
     <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-20">
-      <div className="w-[600px] h-[600px] rounded-full border border-cyan-400/30 animate-spin" style={{ animationDuration: '45s' }} />
-      <div className="absolute w-[900px] h-[900px] rounded-full border border-white/15 animate-spin" style={{ animationDuration: '70s', animationDirection: 'reverse' }} />
-      <div className="absolute w-[1200px] h-[1200px] rounded-full border border-white/8" />
+      <div className="w-[600px] h-[600px] rounded-none border border-cyan-400/30 animate-spin" style={{ animationDuration: '45s' }} />
+      <div className="absolute w-[900px] h-[900px] rounded-none border border-white/15 animate-spin" style={{ animationDuration: '70s', animationDirection: 'reverse' }} />
+      <div className="absolute w-[1200px] h-[1200px] rounded-none border border-white/8" />
     </div>
 
     <div className="relative z-10 max-w-4xl mx-auto flex flex-col items-center">
       <FadeIn delay={100}>
-        <div className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full glass border border-cyan-400/25 mb-8 shadow-[0_0_20px_rgba(6,182,212,0.15)]">
+        <div className="inline-flex items-center gap-2.5 px-4 py-2 rounded-none glass bg-space-900/80 border border-white/10 mb-8">
           <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
           <span className="font-mono text-[11px] font-bold tracking-[0.25em] text-cyan-300 uppercase">
             SOVEREIGN EARTH INTELLIGENCE · READY
@@ -1109,7 +1091,7 @@ const SectionFinale: React.FC<{ onNavigate: (tab: NavigationTab) => void }> = ({
               soundFx.playChime();
               onNavigate('mission-control');
             }}
-            className="bg-white text-black px-8 py-4 rounded-full text-sm font-semibold tracking-wide hover:bg-cyan-50 active:scale-95 transition-all glow-btn flex items-center gap-3 shadow-2xl shadow-white/15 cursor-pointer"
+            className="bg-white text-black px-8 py-4 rounded-none text-sm font-semibold tracking-wide hover:bg-cyan-50 active:scale-95 transition-all  flex items-center gap-3  shadow-white/15 cursor-pointer"
           >
             <Radio className="w-4 h-4 text-cyan-600 animate-pulse" />
             Enter Mission Control Live
@@ -1119,7 +1101,7 @@ const SectionFinale: React.FC<{ onNavigate: (tab: NavigationTab) => void }> = ({
               soundFx.playTelemetryPing();
               onNavigate('physics-lab');
             }}
-            className="glass border border-white/20 text-white px-8 py-4 rounded-full text-sm font-medium tracking-wide hover:bg-white hover:text-black active:scale-95 transition-all flex items-center gap-3 cursor-pointer"
+            className="bg-space-900/60 border border-white/20 text-white px-8 py-4 rounded-none text-sm font-medium tracking-wide hover:bg-white hover:text-black active:scale-95 transition-all flex items-center gap-3 cursor-pointer"
           >
             128-D Physics Engine
             <ArrowRight className="w-4 h-4" />
@@ -1129,7 +1111,7 @@ const SectionFinale: React.FC<{ onNavigate: (tab: NavigationTab) => void }> = ({
               soundFx.playTick();
               onNavigate('dharma-gate');
             }}
-            className="px-6 py-4 rounded-full text-xs font-mono text-cyan-400 border border-cyan-500/30 hover:bg-cyan-500/10 transition-colors flex items-center gap-2 cursor-pointer"
+            className="px-6 py-4 rounded-none text-xs font-mono text-cyan-400 border border-cyan-500/30 hover:bg-cyan-500/10 transition-colors flex items-center gap-2 cursor-pointer"
           >
             <ShieldCheck className="w-4 h-4" />
             Audit Dharma Firewall
