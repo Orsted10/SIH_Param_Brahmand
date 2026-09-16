@@ -1,0 +1,78 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --void-0: #03050A;
+  --void-1: #060B12;
+  --void-2: #0A111B;
+  --panel: rgba(11, 18, 28, 0.72);
+  --panel-strong: rgba(8, 14, 23, 0.92);
+  --white: #F4F7FA;
+  --muted: rgba(244, 247, 250, 0.62);
+  --faint: rgba(244, 247, 250, 0.34);
+  --cyan: #73E6FF;
+  --cyan-soft: rgba(115, 230, 255, 0.15);
+  --green: #77E6A5;
+  --amber: #FFD166;
+  --red: #FF6B6B;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--void-0);
+  color: var(--white);
+  font-family: var(--font-geist-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  overflow-x: hidden;
+  height: 100dvh;
+  width: 100vw;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Custom Minimalist Scientific Scrollbars */
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--void-0);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(115, 230, 255, 0.2);
+  border-radius: 2px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(115, 230, 255, 0.4);
+}
+
+/* Safe areas for mobile notches and browser navigation bars */
+.safe-area-inset-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 1rem);
+}
+
+.safe-area-inset-top {
+  padding-top: env(safe-area-inset-top, 0);
+}
+
+/* Subtle scientific cursor styling for desktop */
+@media (pointer: fine) {
+  a, button, [role="button"], input, textarea {
+    cursor: pointer;
+  }
+}
+
+/* Reduced Motion Preferences */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
