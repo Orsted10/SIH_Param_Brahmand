@@ -4,16 +4,17 @@ import React, { useEffect, useState } from "react";
 import { useWorkspaceStore } from "@/stores/workspaceStore";
 import { detectWebGLSupport } from "@/lib/browser/webgl";
 import { subscribeToReducedMotion, checkPrefersReducedMotion } from "@/lib/browser/motion";
-import { SystemHeader } from "@/components/shell/SystemHeader";
-import { IntelligenceRail } from "@/components/shell/IntelligenceRail";
+import { EditorialNav } from "@/components/navigation/EditorialNav";
+import { ScientificCursor } from "@/components/typography/ScientificCursor";
 import { ObservationWorkspace } from "@/components/workspace/ObservationWorkspace";
-import { CommandDock } from "@/components/shell/CommandDock";
 import { CommandPalette } from "@/components/shell/CommandPalette";
 import { DevDiagnosticsPanel } from "@/components/shell/DevDiagnosticsPanel";
 import { CapabilityModal } from "@/components/navigation/CapabilityModal";
 import { FutureEnginePanel } from "@/components/workspace/FutureEnginePanel";
 import { SessionAuditViewer } from "@/components/workspace/SessionAuditViewer";
 import { ToastContainer } from "@/components/shell/ToastContainer";
+import { classifyFile, extractImageDimensions, urlManager } from "@/lib/files/fileUtils";
+import { ImageryAsset } from "@/types/imagery";
 import { SYSTEM_BRAND } from "@/lib/constants/palette";
 
 export default function Home() {
@@ -22,6 +23,8 @@ export default function Home() {
     setWebglSupported,
     setNetworkOnline,
     setReducedMotion,
+    addUploadedAsset,
+    setViewMode,
   } = useWorkspaceStore();
 
   const [entranceComplete, setEntranceComplete] = useState<boolean>(false);
@@ -74,6 +77,42 @@ export default function Home() {
     };
   }, [setSystemStatus, setWebglSupported, setNetworkOnline, setReducedMotion]);
 
+  // Handle local observation file ingestion
+  const handleFileInputChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const classification = classifyFile(file);
+      const dimensions = await extractImageDimensions(file);
+
+      let previewUrl: string | null = null;
+      if (classification.isPreviewable) {
+        previewUrl = urlManager.create(file);
+      }
+
+      const asset: ImageryAsset = {
+        id: `ast-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+        name: file.name,
+        mimeType: file.type || "application/octet-stream",
+        sizeBytes: file.size,
+        lastModified: file.lastModified,
+        kind: classification.kind,
+        status: classification.status,
+        statusMessage: classification.statusMessage,
+        previewUrl,
+        dimensions,
+        createdAt: new Date().toISOString(),
+      };
+
+      addUploadedAsset(asset);
+    }
+
+    setViewMode("OBSERVATION");
+    e.target.value = "";
+  };
+
   return (
     <div className="relative w-screen h-[100dvh] overflow-hidden bg-void-0 font-sans">
       {/* Cinematic One-Time Entrance Overlay */}
@@ -87,7 +126,7 @@ export default function Home() {
           <div className="w-48 h-[1px] bg-cyan-accent/80 animate-pulse mb-6" />
 
           <div className="flex flex-col items-center gap-1.5 text-center">
-            <span className="text-xs font-bold tracking-widest text-space-white">
+            <span className="text-xs font-bold tracking-widest text-space-white uppercase">
               {SYSTEM_BRAND.name}
             </span>
             <span className="text-[10px] text-cyan-accent tracking-wider">
@@ -106,11 +145,23 @@ export default function Home() {
         </div>
       )}
 
-      {/* Main Operating System Interface */}
-      <SystemHeader />
-      <IntelligenceRail />
+      {/* Editorial Planetary HUD Navigation & Live Raycasting Cursor */}
+      <EditorialNav />
+      <ScientificCursor />
+
+      {/* Main Full-Bleed Planetary Canvas (Globe, Map, Observation) */}
       <ObservationWorkspace />
-      <CommandDock />
+
+      {/* Hidden Native File Input for [ + INSERT OBSERVATION ] */}
+      <input
+        id="file-upload-input"
+        type="file"
+        multiple
+        accept=".tif,.tiff,.png,.jpg,.jpeg"
+        onChange={handleFileInputChange}
+        className="hidden"
+        aria-label="Upload Satellite Observation"
+      />
 
       {/* Modals, Palettes & Overlays */}
       <CommandPalette />

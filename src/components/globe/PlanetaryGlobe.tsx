@@ -5,12 +5,15 @@ import * as THREE from "three";
 import { Coordinate } from "@/types/map";
 import { GlobeFallback } from "./GlobeFallback";
 import { detectWebGLSupport } from "@/lib/browser/webgl";
+import { normalizeLongitude } from "@/lib/utils/coordinates";
+import { useWorkspaceStore } from "@/stores/workspaceStore";
 
 interface PlanetaryGlobeProps {
   interactive?: boolean;
   rotationEnabled?: boolean;
   selectedCoordinate?: Coordinate | null;
   reducedMotion?: boolean;
+  viewMode?: "GLOBE" | "MAP" | "OBSERVATION";
   onCoordinateSelect?: (coord: Coordinate) => void;
   className?: string;
 }
@@ -20,6 +23,8 @@ export const PlanetaryGlobe: React.FC<PlanetaryGlobeProps> = ({
   rotationEnabled = true,
   selectedCoordinate,
   reducedMotion = false,
+  viewMode = "GLOBE",
+  onCoordinateSelect,
   className,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -33,15 +38,16 @@ export const PlanetaryGlobe: React.FC<PlanetaryGlobeProps> = ({
     if (!containerRef.current || !webglSupported.current) return;
 
     const container = containerRef.current;
-    const width = container.clientWidth || 800;
-    const height = container.clientHeight || 800;
+    const width = container.clientWidth || window.innerWidth || 1200;
+    const height = container.clientHeight || window.innerHeight || 800;
 
     // 1. Scene & Camera Setup
     const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
-    camera.position.set(0, 0, 4.2);
+    const camera = new THREE.PerspectiveCamera(40, width / height, 0.1, 1000);
+    const initialCamZ = 3.6;
+    camera.position.set(0, 0, initialCamZ);
 
-    // 2. Renderer with DPR clamp (Math.min(window.devicePixelRatio, 1.75))
+    // 2. High-Performance Renderer with DPR Clamp
     const dpr = Math.min(typeof window !== "undefined" ? window.devicePixelRatio : 1, 1.75);
     let renderer: THREE.WebGLRenderer;
     try {
@@ -58,9 +64,28 @@ export const PlanetaryGlobe: React.FC<PlanetaryGlobeProps> = ({
       return;
     }
 
-    // 3. Procedural Earth Sphere with GLSL Shader
-    const globeRadius = 1.35;
-    const globeGeometry = new THREE.SphereGeometry(globeRadius, 64, 64);
+    // 3. Very Sparse, Subtle Deep-Space Points (Nearly Invisible)
+    const starCount = 300;
+    const starGeo = new THREE.BufferGeometry();
+    const starPositions = new Float32Array(starCount * 3);
+    for (let i = 0; i < starCount * 3; i += 3) {
+      starPositions[i] = (Math.random() - 0.5) * 40;
+      starPositions[i + 1] = (Math.random() - 0.5) * 40;
+      starPositions[i + 2] = -10 - Math.random() * 20;
+    }
+    starGeo.setAttribute("position", new THREE.BufferAttribute(starPositions, 3));
+    const starMat = new THREE.PointsMaterial({
+      color: 0xf4f7fa,
+      size: 0.03,
+      transparent: true,
+      opacity: 0.25,
+    });
+    const starField = new THREE.Points(starGeo, starMat);
+    scene.add(starField);
+
+    // 4. Procedural Earth Sphere with Scientific GLSL Shader
+    const globeRadius = 1.45; // Dominant planetary scale
+    const globeGeometry = new THREE.SphereGeometry(globeRadius, 96, 96);
 
     const earthVertexShader = `
       varying vec3 vNormal;
@@ -80,8 +105,8 @@ export const PlanetaryGlobe: React.FC<PlanetaryGlobeProps> = ({
       varying vec2 vUv;
       uniform vec3 uSunDirection;
       uniform float uTime;
+      uniform float uHoverActive;
 
-      // Simplex-like pseudo noise for procedural continental landmasses
       float hash(vec2 p) {
         return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123);
       }
@@ -97,9 +122,9 @@ export const PlanetaryGlobe: React.FC<PlanetaryGlobeProps> = ({
       float fbm(vec2 p) {
         float v = 0.0;
         float a = 0.5;
-        for (int i = 0; i < 4; ++i) {
+        for (int i = 0; i < 5; ++i) {
           v += a * noise(p);
-          p *= 2.1;
+          p *= 2.05;
           a *= 0.5;
         }
         return v;
@@ -110,37 +135,40 @@ export const PlanetaryGlobe: React.FC<PlanetaryGlobeProps> = ({
         vec3 lightDir = normalize(uSunDirection);
         float diffuse = max(dot(normal, lightDir), 0.0);
 
-        // Procedural terrain sampling
+        // Procedural geographic landmasses
         vec2 sphereUv = vUv * vec2(8.0, 4.0);
         float land = fbm(sphereUv);
 
-        // Oceanic deep space blue vs continental terrain
-        vec3 oceanColor = vec3(0.02, 0.06, 0.12);
-        vec3 landColor = vec3(0.07, 0.15, 0.18);
-        vec3 coastGlow = vec3(0.12, 0.45, 0.55);
+        // Deep oceanic blue vs continental terrain
+        vec3 oceanDeep = vec3(0.015, 0.035, 0.07);
+        vec3 oceanShelf = vec3(0.025, 0.065, 0.11);
+        vec3 landColor = vec3(0.065, 0.12, 0.14);
+        vec3 highlands = vec3(0.12, 0.20, 0.22);
+        vec3 coastGlow = vec3(0.08, 0.32, 0.40);
 
-        vec3 surfaceColor = oceanColor;
-        if (land > 0.46) {
-          surfaceColor = mix(coastGlow, landColor, smoothstep(0.46, 0.52, land));
+        vec3 surfaceColor = mix(oceanDeep, oceanShelf, smoothstep(0.3, 0.45, land));
+        if (land > 0.45) {
+          surfaceColor = mix(coastGlow, landColor, smoothstep(0.45, 0.52, land));
+          surfaceColor = mix(surfaceColor, highlands, smoothstep(0.58, 0.72, land));
         }
 
-        // Coordinate Grid Lines (Equator, Prime Meridian, Tropics)
-        float latLines = step(0.98, fract(vUv.y * 18.0));
-        float lonLines = step(0.98, fract(vUv.x * 36.0));
-        float grid = max(latLines, lonLines) * 0.18;
-        surfaceColor += vec3(0.45, 0.9, 1.0) * grid;
+        // Faint Coordinate Grid Lines (Appears gently during hover/interaction)
+        float latLines = step(0.985, fract(vUv.y * 18.0));
+        float lonLines = step(0.985, fract(vUv.x * 36.0));
+        float grid = max(latLines, lonLines) * (0.08 + uHoverActive * 0.12);
+        surfaceColor += vec3(0.45, 0.90, 1.0) * grid;
 
-        // Night-side city / calibration telemetry emission
+        // Subtle night-side settlement illumination
         float night = 1.0 - diffuse;
-        vec3 nightLights = vec3(0.45, 0.9, 1.0) * step(0.58, land) * night * 0.35;
+        vec3 nightLights = vec3(0.55, 0.88, 1.0) * step(0.56, land) * night * 0.22;
 
-        // Final illuminated surface
-        vec3 finalColor = (surfaceColor * (diffuse * 0.95 + 0.15)) + nightLights;
+        // Illumination
+        vec3 finalColor = (surfaceColor * (diffuse * 0.92 + 0.14)) + nightLights;
 
-        // Limb atmospheric Fresnel rim
+        // Thin Rayleigh limb atmospheric glow
         vec3 viewDir = normalize(-vPosition);
-        float fresnel = pow(1.0 - max(dot(normal, viewDir), 0.0), 3.2);
-        finalColor += vec3(0.45, 0.88, 1.0) * fresnel * 0.65;
+        float fresnel = pow(1.0 - max(dot(normal, viewDir), 0.0), 3.5);
+        finalColor += vec3(0.45, 0.85, 1.0) * fresnel * 0.55;
 
         gl_FragColor = vec4(finalColor, 1.0);
       }
@@ -150,19 +178,20 @@ export const PlanetaryGlobe: React.FC<PlanetaryGlobeProps> = ({
       vertexShader: earthVertexShader,
       fragmentShader: earthFragmentShader,
       uniforms: {
-        uSunDirection: { value: new THREE.Vector3(1.5, 0.8, 1.8).normalize() },
+        uSunDirection: { value: new THREE.Vector3(1.6, 0.7, 1.6).normalize() },
         uTime: { value: 0 },
+        uHoverActive: { value: 0.0 },
       },
     });
 
     const earthMesh = new THREE.Mesh(globeGeometry, earthMaterial);
-    // Initial Earth orientation centered towards Asia/India
-    earthMesh.rotation.y = 3.6;
-    earthMesh.rotation.x = 0.35;
+    // Initial orientation: Center Asia/India
+    earthMesh.rotation.y = 3.65;
+    earthMesh.rotation.x = 0.32;
     scene.add(earthMesh);
 
-    // 4. Subtle Outer Atmosphere Glow Shell
-    const atmosphereGeometry = new THREE.SphereGeometry(globeRadius * 1.025, 48, 48);
+    // 5. Delicate Atmospheric Outer Shell (Physical Rim Glow)
+    const atmosphereGeometry = new THREE.SphereGeometry(globeRadius * 1.02, 64, 64);
     const atmosphereMaterial = new THREE.ShaderMaterial({
       vertexShader: `
         varying vec3 vNormal;
@@ -174,8 +203,8 @@ export const PlanetaryGlobe: React.FC<PlanetaryGlobeProps> = ({
       fragmentShader: `
         varying vec3 vNormal;
         void main() {
-          float intensity = pow(0.65 - dot(vNormal, vec3(0.0, 0.0, 1.0)), 2.5);
-          gl_FragColor = vec4(0.45, 0.9, 1.0, 1.0) * intensity * 0.4;
+          float intensity = pow(0.7 - dot(vNormal, vec3(0.0, 0.0, 1.0)), 2.8);
+          gl_FragColor = vec4(0.45, 0.88, 1.0, 1.0) * intensity * 0.38;
         }
       `,
       blending: THREE.AdditiveBlending,
@@ -185,33 +214,16 @@ export const PlanetaryGlobe: React.FC<PlanetaryGlobeProps> = ({
     const atmosphereMesh = new THREE.Mesh(atmosphereGeometry, atmosphereMaterial);
     scene.add(atmosphereMesh);
 
-    // 5. Orbital Calibration Ring & Data Arc
-    const orbitCurve = new THREE.EllipseCurve(0, 0, globeRadius * 1.22, globeRadius * 1.22, 0, 2 * Math.PI, false, 0);
-    const orbitPoints = orbitCurve.getPoints(90);
-    const orbitGeometry = new THREE.BufferGeometry().setFromPoints(
-      orbitPoints.map((p) => new THREE.Vector3(p.x, 0, p.y))
-    );
-    const orbitMaterial = new THREE.LineBasicMaterial({
-      color: 0x73e6ff,
-      transparent: true,
-      opacity: 0.18,
-    });
-    const orbitLine = new THREE.Line(orbitGeometry, orbitMaterial);
-    orbitLine.rotation.x = 1.1;
-    orbitLine.rotation.y = 0.4;
-    scene.add(orbitLine);
-
-    // 6. Selected Coordinate Target Marker on Globe Surface
-    const markerGeometry = new THREE.RingGeometry(0.022, 0.038, 24);
+    // 6. Selected Coordinate Reticle Marker on Globe Surface
+    const markerGeometry = new THREE.RingGeometry(0.018, 0.032, 24);
     const markerMaterial = new THREE.MeshBasicMaterial({
       color: 0x73e6ff,
       side: THREE.DoubleSide,
       transparent: true,
-      opacity: 0.85,
+      opacity: 0.9,
     });
     const markerMesh = new THREE.Mesh(markerGeometry, markerMaterial);
 
-    // Convert lat/lng to 3D coordinates on Earth sphere
     const updateMarkerPosition = (lat: number, lng: number) => {
       const phi = (90 - lat) * (Math.PI / 180);
       const theta = (lng + 180) * (Math.PI / 180);
@@ -229,17 +241,37 @@ export const PlanetaryGlobe: React.FC<PlanetaryGlobeProps> = ({
     updateMarkerPosition(targetCoord.latitude, targetCoord.longitude);
     earthMesh.add(markerMesh);
 
-    // 7. Dynamic User Interaction (Pointer Drag, Inertia, Clamped Zoom)
+    // 7. Raycasting Setup for Live Pointer Coordinates on Earth
+    const raycaster = new THREE.Raycaster();
+    const pointer = new THREE.Vector2();
+
+    // Invert sphere coordinates to get exact mathematical latitude and longitude
+    const getCoordinatesFromLocalIntersection = (localPoint: THREE.Vector3) => {
+      const r = localPoint.length();
+      const phi = Math.acos(Math.max(-1, Math.min(1, localPoint.y / r)));
+      const lat = 90 - (phi * 180) / Math.PI;
+      const theta = Math.atan2(localPoint.z, -localPoint.x);
+      const lng = (theta * 180) / Math.PI - 180;
+      return {
+        latitude: Number(lat.toFixed(4)),
+        longitude: Number(normalizeLongitude(lng).toFixed(4)),
+      };
+    };
+
+    // 8. Interaction State & Damped Movement
     let isDragging = false;
+    let hasDraggedSignificantly = false;
     let previousMouseX = 0;
     let previousMouseY = 0;
     let targetRotationX = earthMesh.rotation.x;
     let targetRotationY = earthMesh.rotation.y;
+    let targetCamZ = initialCamZ;
     let lastInteractionTime = Date.now();
 
     const onPointerDown = (e: MouseEvent | TouchEvent) => {
       if (!interactive) return;
       isDragging = true;
+      hasDraggedSignificantly = false;
       lastInteractionTime = Date.now();
       const clientX = "touches" in e ? e.touches[0].clientX : e.clientX;
       const clientY = "touches" in e ? e.touches[0].clientY : e.clientY;
@@ -248,23 +280,73 @@ export const PlanetaryGlobe: React.FC<PlanetaryGlobeProps> = ({
     };
 
     const onPointerMove = (e: MouseEvent | TouchEvent) => {
-      if (!isDragging || !interactive) return;
-      lastInteractionTime = Date.now();
+      const rect = container.getBoundingClientRect();
       const clientX = "touches" in e ? e.touches[0].clientX : e.clientX;
       const clientY = "touches" in e ? e.touches[0].clientY : e.clientY;
-      const deltaX = clientX - previousMouseX;
-      const deltaY = clientY - previousMouseY;
 
-      targetRotationY += deltaX * 0.005;
-      targetRotationX += deltaY * 0.005;
-      // Clamp vertical pitch so user doesn't flip Earth upside down
-      targetRotationX = Math.max(-1.1, Math.min(1.1, targetRotationX));
+      // Update normalized device coordinates for raycaster
+      pointer.x = ((clientX - rect.left) / rect.width) * 2 - 1;
+      pointer.y = -((clientY - rect.top) / rect.height) * 2 + 1;
 
-      previousMouseX = clientX;
-      previousMouseY = clientY;
+      // Raycast to check if pointer is over Earth surface
+      raycaster.setFromCamera(pointer, camera);
+      const intersects = raycaster.intersectObject(earthMesh);
+      if (intersects.length > 0) {
+        earthMaterial.uniforms.uHoverActive.value = 1.0;
+        const localPoint = earthMesh.worldToLocal(intersects[0].point.clone());
+        const coord = getCoordinatesFromLocalIntersection(localPoint);
+        useWorkspaceStore.getState().setHoveredCoordinate(coord);
+      } else {
+        earthMaterial.uniforms.uHoverActive.value = 0.0;
+        useWorkspaceStore.getState().setHoveredCoordinate(null);
+      }
+
+      if (isDragging && interactive) {
+        lastInteractionTime = Date.now();
+        const deltaX = clientX - previousMouseX;
+        const deltaY = clientY - previousMouseY;
+
+        if (Math.abs(deltaX) > 3 || Math.abs(deltaY) > 3) {
+          hasDraggedSignificantly = true;
+        }
+
+        targetRotationY += deltaX * 0.004;
+        targetRotationX += deltaY * 0.004;
+        targetRotationX = Math.max(-1.1, Math.min(1.1, targetRotationX));
+
+        previousMouseX = clientX;
+        previousMouseY = clientY;
+      }
     };
 
-    const onPointerUp = () => {
+    const onPointerUp = (e: MouseEvent | TouchEvent) => {
+      if (!hasDraggedSignificantly && interactive && !("touches" in e)) {
+        // Physical selection click on Earth
+        raycaster.setFromCamera(pointer, camera);
+        const intersects = raycaster.intersectObject(earthMesh);
+        if (intersects.length > 0) {
+          const localPoint = earthMesh.worldToLocal(intersects[0].point.clone());
+          const coord = getCoordinatesFromLocalIntersection(localPoint);
+          const fullCoord = {
+            latitude: coord.latitude,
+            longitude: coord.longitude,
+            label: "STUDY REGION",
+          };
+
+          useWorkspaceStore.getState().setSelectedLocation(fullCoord);
+          if (onCoordinateSelect) {
+            onCoordinateSelect(fullCoord);
+          }
+
+          updateMarkerPosition(coord.latitude, coord.longitude);
+
+          // Subtly rotate Earth toward selected point
+          const targetPhi = (90 - coord.latitude) * (Math.PI / 180);
+          const targetTheta = (coord.longitude + 180) * (Math.PI / 180);
+          targetRotationY = -(targetTheta - Math.PI / 2);
+          targetRotationX = (targetPhi - Math.PI / 2);
+        }
+      }
       isDragging = false;
     };
 
@@ -272,8 +354,8 @@ export const PlanetaryGlobe: React.FC<PlanetaryGlobeProps> = ({
       if (!interactive) return;
       e.preventDefault();
       lastInteractionTime = Date.now();
-      const zoomSpeed = 0.0025;
-      camera.position.z = Math.max(2.2, Math.min(6.5, camera.position.z + e.deltaY * zoomSpeed));
+      const zoomSpeed = 0.002;
+      targetCamZ = Math.max(2.1, Math.min(5.5, targetCamZ + e.deltaY * zoomSpeed));
     };
 
     const dom = renderer.domElement;
@@ -285,7 +367,7 @@ export const PlanetaryGlobe: React.FC<PlanetaryGlobeProps> = ({
     window.addEventListener("touchend", onPointerUp);
     dom.addEventListener("wheel", onWheel, { passive: false });
 
-    // 8. Animation Loop (Respects document.hidden and reducedMotion)
+    // 9. Animation Loop with Parallax & Camera Damping
     let animationFrameId: number;
     const clock = new THREE.Clock();
 
@@ -298,17 +380,29 @@ export const PlanetaryGlobe: React.FC<PlanetaryGlobeProps> = ({
       const delta = clock.getDelta();
       earthMaterial.uniforms.uTime.value += delta;
 
-      // Slow planetary rotation if motion enabled and not currently dragging
-      const idleTime = Date.now() - lastInteractionTime;
-      if (rotationEnabled && !reducedMotion && idleTime > 1500) {
-        targetRotationY += 0.0007;
+      // Handle Continuous Orbit vs Camera Dive
+      if (viewMode === "MAP") {
+        // Dive toward surface
+        targetCamZ = 1.48;
+      } else {
+        // Planetary view
+        if (targetCamZ < 2.0) targetCamZ = initialCamZ;
       }
 
-      // Smooth damping interpolation
+      // Smooth camera position interpolation
+      camera.position.z += (targetCamZ - camera.position.z) * 0.06;
+
+      // Slow planetary rotation if motion enabled and not dragging
+      const idleTime = Date.now() - lastInteractionTime;
+      if (rotationEnabled && !reducedMotion && idleTime > 2000 && !isDragging) {
+        targetRotationY += 0.0006;
+      }
+
+      // Smooth rotational damping
       earthMesh.rotation.y += (targetRotationY - earthMesh.rotation.y) * 0.08;
       earthMesh.rotation.x += (targetRotationX - earthMesh.rotation.x) * 0.08;
 
-      // Subtle pulse on selected coordinate ring
+      // Subtle reticle pulse
       const markerScale = 1.0 + Math.sin(Date.now() * 0.003) * 0.12;
       markerMesh.scale.set(markerScale, markerScale, 1);
 
@@ -318,7 +412,7 @@ export const PlanetaryGlobe: React.FC<PlanetaryGlobeProps> = ({
 
     animate();
 
-    // 9. Resize Observer
+    // 10. Resize Observer
     const resizeObserver = new ResizeObserver((entries) => {
       for (const entry of entries) {
         const { width: newWidth, height: newHeight } = entry.contentRect;
@@ -331,7 +425,7 @@ export const PlanetaryGlobe: React.FC<PlanetaryGlobeProps> = ({
     });
     resizeObserver.observe(container);
 
-    // 10. Memory Cleanup
+    // 11. Complete Memory Cleanup
     return () => {
       cancelAnimationFrame(animationFrameId);
       resizeObserver.disconnect();
@@ -348,8 +442,8 @@ export const PlanetaryGlobe: React.FC<PlanetaryGlobeProps> = ({
       earthMaterial.dispose();
       atmosphereGeometry.dispose();
       atmosphereMaterial.dispose();
-      orbitGeometry.dispose();
-      orbitMaterial.dispose();
+      starGeo.dispose();
+      starMat.dispose();
       markerGeometry.dispose();
       markerMaterial.dispose();
       renderer.dispose();
@@ -358,7 +452,7 @@ export const PlanetaryGlobe: React.FC<PlanetaryGlobeProps> = ({
         dom.parentNode.removeChild(dom);
       }
     };
-  }, [interactive, rotationEnabled, selectedCoordinate, reducedMotion]);
+  }, [interactive, rotationEnabled, selectedCoordinate, reducedMotion, viewMode, onCoordinateSelect]);
 
   if (!webglSupported.current) {
     return <GlobeFallback selectedCoordinate={selectedCoordinate} />;

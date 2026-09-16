@@ -15,18 +15,22 @@ import { urlManager } from "@/lib/files/fileUtils";
 interface WorkspaceState {
   // Navigation and view state
   activeMode: WorkspaceMode;
+  viewMode: "GLOBE" | "MAP" | "OBSERVATION";
   globeVisible: boolean;
   sidebarOpen: boolean;
   theme: "dark";
 
   // Data & Location
   selectedLocation: Coordinate | null;
+  hoveredCoordinate: Coordinate | null;
   selectedDataset: string | null;
   uploadedAssets: ImageryAsset[];
 
   // Query state
   currentQuery: string;
   queryHistory: QueryEvent[];
+  isCommandOpen: boolean;
+  isIngestOpen: boolean;
 
   // Map Camera Viewport
   mapViewport: MapViewport;
@@ -50,6 +54,10 @@ interface WorkspaceState {
   executionEvents: ExecutionEvent[];
 
   // Actions
+  setViewMode: (mode: "GLOBE" | "MAP" | "OBSERVATION") => void;
+  setHoveredCoordinate: (coord: Coordinate | null) => void;
+  setCommandOpen: (open: boolean) => void;
+  setIngestOpen: (open: boolean) => void;
   setActiveMode: (mode: WorkspaceMode) => void;
   setSelectedLocation: (coord: Coordinate | null) => void;
   addUploadedAsset: (asset: ImageryAsset) => void;
@@ -86,16 +94,20 @@ const generateId = () => {
 
 export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
   activeMode: "MISSION",
+  viewMode: "GLOBE",
   globeVisible: true,
   sidebarOpen: true,
   theme: "dark",
 
   selectedLocation: DEFAULT_STUDY_COORDINATE,
+  hoveredCoordinate: null,
   selectedDataset: null,
   uploadedAssets: [],
 
   currentQuery: "",
   queryHistory: [],
+  isCommandOpen: false,
+  isIngestOpen: false,
 
   mapViewport: {
     center: MAP_CONFIG.defaultCenter,
@@ -125,6 +137,15 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
       details: { environment: "browser", version: "0.1.0" },
     },
   ],
+
+  setViewMode: (mode) => {
+    set({ viewMode: mode, globeVisible: mode === "GLOBE" });
+    get().logExecutionEvent("VIEW_CHANGED", { viewMode: mode });
+  },
+
+  setHoveredCoordinate: (coord) => set({ hoveredCoordinate: coord }),
+  setCommandOpen: (open) => set({ isCommandOpen: open }),
+  setIngestOpen: (open) => set({ isIngestOpen: open }),
 
   setActiveMode: (mode) => {
     if (["ANALYZE", "COMPARE", "EVIDENCE", "REPORT"].includes(mode)) {
@@ -229,13 +250,13 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
     })),
 
   setGlobeVisible: (visible) => {
-    set({ globeVisible: visible });
+    set({ globeVisible: visible, viewMode: visible ? "GLOBE" : "MAP" });
     get().logExecutionEvent("VIEW_CHANGED", { view: visible ? "GLOBE" : "MAP" });
   },
 
   toggleGlobe: () => {
     const next = !get().globeVisible;
-    set({ globeVisible: next });
+    set({ globeVisible: next, viewMode: next ? "GLOBE" : "MAP" });
     get().logExecutionEvent("VIEW_CHANGED", { view: next ? "GLOBE" : "MAP" });
   },
 
@@ -320,6 +341,10 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
         pitch: 0,
       },
       globeVisible: true,
+      viewMode: "GLOBE",
+      isCommandOpen: false,
+      isIngestOpen: false,
+      hoveredCoordinate: null,
       futureDialogMode: null,
     });
     get().logExecutionEvent("SESSION_RESET");
