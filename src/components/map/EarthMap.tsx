@@ -1,12 +1,11 @@
 "use client";
 
-import React, { useEffect, useRef, useState, useCallback } from "react";
+import React, { useEffect, useRef } from "react";
 import maplibregl, { Map as MapLibreMap, Marker } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { useWorkspaceStore } from "@/stores/workspaceStore";
-import { MAP_CONFIG, DEFAULT_STUDY_COORDINATE } from "@/lib/map/mapConfig";
+import { MAP_CONFIG } from "@/lib/map/mapConfig";
 import { MapErrorBoundary } from "./MapErrorBoundary";
-import { Compass, Box, Plus, Minus, RotateCcw } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 
 interface EarthMapProps {
@@ -14,7 +13,7 @@ interface EarthMapProps {
   onReturnToOrbit?: () => void;
 }
 
-export const EarthMap: React.FC<EarthMapProps> = ({ className, onReturnToOrbit }) => {
+export const EarthMap: React.FC<EarthMapProps> = ({ className }) => {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<MapLibreMap | null>(null);
   const markerRef = useRef<Marker | null>(null);
@@ -23,11 +22,7 @@ export const EarthMap: React.FC<EarthMapProps> = ({ className, onReturnToOrbit }
     selectedLocation,
     setSelectedLocation,
     setMapViewport,
-    setViewMode,
   } = useWorkspaceStore();
-
-  const [is3dPitch, setIs3dPitch] = useState<boolean>(false);
-  const [controlsHovered, setControlsHovered] = useState<boolean>(false);
 
   // Initialize MapLibre GL
   useEffect(() => {
@@ -135,37 +130,7 @@ export const EarthMap: React.FC<EarthMapProps> = ({ className, onReturnToOrbit }
     }
   }, [selectedLocation]);
 
-  const handleReturnOrbit = useCallback(() => {
-    if (onReturnToOrbit) {
-      onReturnToOrbit();
-    } else {
-      setViewMode("GLOBE");
-    }
-  }, [onReturnToOrbit, setViewMode]);
-
-  const handleZoomIn = () => mapInstanceRef.current?.zoomIn({ duration: 300 });
-  const handleZoomOut = () => mapInstanceRef.current?.zoomOut({ duration: 300 });
-  const handleResetNorth = () => {
-    mapInstanceRef.current?.resetNorthPitch({ duration: 500 });
-    setIs3dPitch(false);
-  };
-  const handleResetIndia = () => {
-    mapInstanceRef.current?.flyTo({
-      center: MAP_CONFIG.defaultCenter,
-      zoom: MAP_CONFIG.defaultZoom,
-      bearing: 0,
-      pitch: 0,
-      duration: 1000,
-    });
-    setIs3dPitch(false);
-    setSelectedLocation(DEFAULT_STUDY_COORDINATE);
-  };
-  const handleTogglePitch = () => {
-    if (!mapInstanceRef.current) return;
-    const nextPitch = is3dPitch ? 0 : 55;
-    mapInstanceRef.current.easeTo({ pitch: nextPitch, duration: 500 });
-    setIs3dPitch(!is3dPitch);
-  };
+  // UI Controls removed for Cinematic Phase 01.7
 
   return (
     <MapErrorBoundary onRetry={() => window.location.reload()}>
@@ -179,80 +144,6 @@ export const EarthMap: React.FC<EarthMapProps> = ({ className, onReturnToOrbit }
 
         {/* Delicate Dark Scientific Grade Overlay */}
         <div className="absolute inset-0 pointer-events-none bg-void-0/25 mix-blend-multiply" />
-
-        {/* Top Floating Return to Orbit Button */}
-        <div className="absolute top-12 left-6 z-20 font-mono">
-          <button
-            onClick={handleReturnOrbit}
-            className="flex items-center gap-2 px-2 py-1 text-[10px] text-space-muted hover:text-space-white transition-colors focus:outline-none uppercase tracking-widest"
-            aria-label="Return to Planetary Orbit View"
-          >
-            <span>← RETURN TO ORBIT</span>
-          </button>
-        </div>
-
-        {/* Selected Coordinates Readout (Bottom Left) */}
-        {selectedLocation && (
-          <div className="absolute bottom-12 left-6 z-20 font-mono flex flex-col gap-1 text-[9px] uppercase tracking-widest mix-blend-difference text-space-white">
-            <span>LAT {selectedLocation.latitude.toFixed(4)}°</span>
-            <span>LON {selectedLocation.longitude.toFixed(4)}°</span>
-            <span>{selectedLocation.label || "WGS84"}</span>
-          </div>
-        )}
-
-        {/* Contextual Map Controls (Fade in on edge approach) */}
-        <div
-          onMouseEnter={() => setControlsHovered(true)}
-          onMouseLeave={() => setControlsHovered(false)}
-          className={cn(
-            "absolute top-24 right-6 z-20 flex flex-col gap-3 transition-opacity duration-300 font-mono",
-            controlsHovered ? "opacity-100" : "opacity-40 hover:opacity-100"
-          )}
-        >
-          <button
-            onClick={handleZoomIn}
-            aria-label="Zoom In"
-            title="Zoom In"
-            className="text-space-muted hover:text-space-white transition-colors focus:outline-none"
-          >
-            <Plus className="w-4 h-4" />
-          </button>
-          <button
-            onClick={handleZoomOut}
-            aria-label="Zoom Out"
-            title="Zoom Out"
-            className="text-space-muted hover:text-space-white transition-colors focus:outline-none"
-          >
-            <Minus className="w-4 h-4" />
-          </button>
-          <button
-            onClick={handleResetNorth}
-            aria-label="Reset North"
-            title="Reset Orientation"
-            className="text-space-muted hover:text-space-white transition-colors focus:outline-none"
-          >
-            <Compass className="w-4 h-4" />
-          </button>
-          <button
-            onClick={handleResetIndia}
-            aria-label="Reset View"
-            title="Reset to India"
-            className="text-space-muted hover:text-space-white transition-colors focus:outline-none"
-          >
-            <RotateCcw className="w-4 h-4" />
-          </button>
-          <button
-            onClick={handleTogglePitch}
-            aria-label="Toggle 3D Pitch"
-            title="Toggle 3D Perspective"
-            className={cn(
-              "transition-colors focus:outline-none",
-              is3dPitch ? "text-space-white" : "text-space-muted hover:text-space-white"
-            )}
-          >
-            <Box className="w-4 h-4" />
-          </button>
-        </div>
       </div>
     </MapErrorBoundary>
   );

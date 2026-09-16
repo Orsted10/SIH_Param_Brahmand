@@ -1,35 +1,99 @@
 "use client";
 
-import React from "react";
-import { useWorkspaceStore } from "@/stores/workspaceStore";
+import React, { useEffect, useRef, useState } from "react";
 import { PlanetaryGlobe } from "../globe/PlanetaryGlobe";
 import { EarthMap } from "../map/EarthMap";
 import { ObservationViewer } from "../upload/ObservationViewer";
-import { AskTheEarth } from "../composer/AskTheEarth";
+import { useScrollTimeline } from "@/lib/hooks/useScrollTimeline";
+import { useWorkspaceStore } from "@/stores/workspaceStore";
 import { cn } from "@/lib/utils/cn";
 import { classifyFile, extractImageDimensions, urlManager } from "@/lib/files/fileUtils";
 import { ImageryAsset } from "@/types/imagery";
 
 export const ObservationWorkspace: React.FC = () => {
-  const {
-    viewMode,
-    setViewMode,
-    selectedLocation,
-    reducedMotion,
-    addUploadedAsset,
-  } = useWorkspaceStore();
+  const { viewMode, setViewMode, reducedMotion, addUploadedAsset } = useWorkspaceStore();
+  const { getProgress } = useScrollTimeline();
+  const [isDragging, setIsDragging] = useState(false);
 
-  const [isDragging, setIsDragging] = React.useState(false);
+  // Refs for direct DOM manipulation to avoid React re-renders during 60fps scrolling
+  const globeContainerRef = useRef<HTMLDivElement>(null);
+  const mapContainerRef = useRef<HTMLDivElement>(null);
+  const textParamRef = useRef<HTMLDivElement>(null);
+  const textBrahmandRef = useRef<HTMLDivElement>(null);
+  const textEarthRef = useRef<HTMLDivElement>(null);
+  const textIntelligenceRef = useRef<HTMLDivElement>(null);
+  const textOpticalRef = useRef<HTMLDivElement>(null);
+  const textSarRef = useRef<HTMLDivElement>(null);
+  const textFusionRef = useRef<HTMLDivElement>(null);
+  const textChangeRef = useRef<HTMLDivElement>(null);
+  const textDataRef = useRef<HTMLDivElement>(null);
 
-  // Auto-transition to Map mode when a location is selected
-  React.useEffect(() => {
-    if (selectedLocation && viewMode === "GLOBE") {
-      const timer = setTimeout(() => {
-        setViewMode("MAP");
-      }, 1200); // Wait for Earth to rotate/zoom before diving
-      return () => clearTimeout(timer);
-    }
-  }, [selectedLocation, viewMode, setViewMode]);
+  // Cinematic Timeline Animation Loop
+  useEffect(() => {
+    let frameId: number;
+    const update = () => {
+      const p = getProgress();
+
+      // Earth vs Map Opacity
+      // Map fades in heavily after 85%
+      if (globeContainerRef.current && mapContainerRef.current) {
+        if (p < 0.85) {
+          globeContainerRef.current.style.opacity = "1";
+          globeContainerRef.current.style.pointerEvents = "auto";
+          mapContainerRef.current.style.opacity = "0";
+          mapContainerRef.current.style.pointerEvents = "none";
+        } else {
+          // Crossfade
+          const mapOp = Math.min(1, (p - 0.85) * 6.66); // 0 to 1 over 15%
+          globeContainerRef.current.style.opacity = (1 - mapOp).toString();
+          globeContainerRef.current.style.pointerEvents = "none";
+          mapContainerRef.current.style.opacity = mapOp.toString();
+          mapContainerRef.current.style.pointerEvents = mapOp > 0.5 ? "auto" : "none";
+        }
+      }
+
+      // Typography Opacity & Scale Choreography
+      const animateText = (ref: React.RefObject<HTMLDivElement | null>, start: number, end: number, peak: number) => {
+        if (!ref.current) return;
+        if (p < start || p > end) {
+          ref.current.style.opacity = "0";
+          ref.current.style.transform = "scale(0.9)";
+          return;
+        }
+        
+        let op = 0;
+        let scale = 1;
+        if (p <= peak) {
+          op = (p - start) / (peak - start);
+          scale = 0.9 + (op * 0.1); // Scale from 0.9 to 1.0
+        } else {
+          op = 1.0 - ((p - peak) / (end - peak));
+          scale = 1.0 + ((1.0 - op) * 0.1); // Scale from 1.0 to 1.1 as it fades out
+        }
+        
+        ref.current.style.opacity = op.toString();
+        ref.current.style.transform = `scale(${scale})`;
+      };
+
+      // Tweak these ranges to perfect the storytelling
+      animateText(textParamRef, 0.02, 0.15, 0.08);
+      animateText(textBrahmandRef, 0.05, 0.18, 0.11);
+      
+      animateText(textEarthRef, 0.20, 0.35, 0.27);
+      animateText(textIntelligenceRef, 0.24, 0.39, 0.31);
+
+      animateText(textOpticalRef, 0.45, 0.55, 0.50);
+      animateText(textSarRef, 0.50, 0.60, 0.55);
+      animateText(textFusionRef, 0.55, 0.65, 0.60);
+      
+      animateText(textChangeRef, 0.65, 0.75, 0.70);
+      animateText(textDataRef, 0.75, 0.85, 0.80);
+
+      frameId = requestAnimationFrame(update);
+    };
+    update();
+    return () => cancelAnimationFrame(frameId);
+  }, [getProgress]);
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
@@ -73,9 +137,17 @@ export const ObservationWorkspace: React.FC = () => {
     setViewMode("OBSERVATION");
   };
 
+  if (viewMode === "OBSERVATION") {
+    return (
+      <main className="relative w-full h-full overflow-hidden bg-void-0 select-none">
+        <ObservationViewer />
+      </main>
+    );
+  }
+
   return (
     <main
-      className="relative w-screen h-[100dvh] overflow-hidden bg-void-0 select-none"
+      className="relative w-full h-full overflow-hidden bg-void-0 select-none"
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
@@ -91,66 +163,65 @@ export const ObservationWorkspace: React.FC = () => {
           INSERT OBSERVATION
         </div>
       </div>
-      {/* 1. Observation View Mode (Full-Bleed Imagery Canvas) */}
-      {viewMode === "OBSERVATION" ? (
-        <ObservationViewer />
-      ) : (
-        /* 2. Unified Planetary Canvas (Globe & Surface Map) */
-        <div className="relative w-full h-full">
-          {/* 3D Planetary Globe Layer */}
-          <div
-            className={cn(
-              "absolute inset-0 z-0 transition-opacity duration-700 ease-in-out",
-              viewMode === "GLOBE" ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
-            )}
-          >
-            <PlanetaryGlobe
-              selectedCoordinate={selectedLocation}
-              reducedMotion={reducedMotion}
-              viewMode={viewMode}
-            />
-          </div>
 
-          {/* 2D Geospatial Basemap Layer */}
-          <div
-            className={cn(
-              "absolute inset-0 z-10 transition-opacity duration-700 ease-in-out",
-              viewMode === "MAP" ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
-            )}
-          >
-            {viewMode === "MAP" && (
-              <EarthMap onReturnToOrbit={() => setViewMode("GLOBE")} />
-            )}
-          </div>
-
-          {/* 3. Minimal Selected Location Annotation & Query Component */}
-          {viewMode === "GLOBE" && (
-            <div className="pointer-events-none absolute inset-0 z-20 flex flex-col justify-between p-8 sm:p-12 md:p-16">
-              {/* Top Left: Minimal Clicked Coordinate Annotation */}
-              <div className="mt-12 sm:mt-16 max-w-md select-none font-mono">
-                {selectedLocation && (
-                  <div className="flex flex-col gap-1 border-l border-space-faint pl-3 animate-in fade-in slide-in-from-left-4 duration-700">
-                    <span className="text-xs text-space-white tracking-widest font-semibold uppercase">
-                      LAT {selectedLocation.latitude.toFixed(4)}°
-                    </span>
-                    <span className="text-xs text-space-white tracking-widest font-semibold uppercase">
-                      LON {selectedLocation.longitude.toFixed(4)}°
-                    </span>
-                    <span className="text-[10px] text-space-muted tracking-wider uppercase mt-1">
-                      {selectedLocation.label || "INDIA"}
-                    </span>
-                  </div>
-                )}
-              </div>
-
-              {/* Bottom Hairline Command Axis: "ASK THE EARTH" */}
-              <div className="w-full flex justify-center pointer-events-auto pb-4">
-                <AskTheEarth />
-              </div>
-            </div>
-          )}
+      {/* Cinematic Typography Layer */}
+      <div className="absolute inset-0 z-10 pointer-events-none flex flex-col items-center justify-center">
+        {/* Arrival */}
+        <div ref={textParamRef} className="absolute text-[8vw] md:text-[12vw] font-bold text-space-white tracking-[0.2em] uppercase opacity-0 transition-none will-change-[opacity,transform] -mt-[10vh]">
+          PARAM
         </div>
-      )}
+        <div ref={textBrahmandRef} className="absolute text-[8vw] md:text-[12vw] font-bold text-space-white tracking-[0.2em] uppercase opacity-0 transition-none will-change-[opacity,transform] mt-[10vh]">
+          BRAHMAND
+        </div>
+
+        {/* Intelligence */}
+        <div ref={textEarthRef} className="absolute text-[15vw] font-bold text-space-white tracking-widest uppercase opacity-0 transition-none will-change-[opacity,transform] -mt-[5vh]">
+          EARTH
+        </div>
+        <div ref={textIntelligenceRef} className="absolute text-[4vw] font-light text-cyan-accent tracking-[0.4em] uppercase opacity-0 transition-none will-change-[opacity,transform] mt-[15vh]">
+          INTELLIGENCE
+        </div>
+
+        {/* Modalities */}
+        <div ref={textOpticalRef} className="absolute text-2xl font-light text-space-white tracking-[0.5em] uppercase opacity-0 transition-none will-change-[opacity,transform] -ml-[20vw] mt-[20vh]">
+          OPTICAL
+        </div>
+        <div ref={textSarRef} className="absolute text-5xl font-bold text-space-white tracking-[0.2em] uppercase opacity-0 transition-none will-change-[opacity,transform] ml-[20vw] mt-[10vh]">
+          SAR
+        </div>
+        <div ref={textFusionRef} className="absolute text-[8vw] font-bold text-space-white tracking-widest uppercase opacity-0 transition-none will-change-[opacity,transform]">
+          FUSION
+        </div>
+
+        {/* Temporal & Data */}
+        <div ref={textChangeRef} className="absolute text-[10vw] font-bold text-red-400 tracking-[0.1em] uppercase opacity-0 transition-none will-change-[opacity,transform]">
+          CHANGE
+        </div>
+        <div ref={textDataRef} className="absolute text-3xl font-mono text-cyan-accent tracking-[0.3em] uppercase opacity-0 transition-none will-change-[opacity,transform]">
+          OBSERVATION → UNDERSTANDING
+        </div>
+      </div>
+
+      {/* 3D Planetary Globe Layer */}
+      <div
+        ref={globeContainerRef}
+        className="absolute inset-0 z-0 transition-none will-change-[opacity]"
+      >
+        <PlanetaryGlobe
+          selectedCoordinate={null}
+          reducedMotion={reducedMotion}
+          viewMode={viewMode}
+          scrollProgressGetter={getProgress}
+        />
+      </div>
+
+      {/* 2D Geospatial Basemap Layer */}
+      <div
+        ref={mapContainerRef}
+        className="absolute inset-0 z-20 opacity-0 pointer-events-none transition-none will-change-[opacity]"
+      >
+        <EarthMap onReturnToOrbit={() => setViewMode("GLOBE")} />
+      </div>
     </main>
   );
 };

@@ -13,6 +13,7 @@ interface PlanetaryGlobeProps {
   selectedCoordinate?: Coordinate | null;
   reducedMotion?: boolean;
   viewMode?: "GLOBE" | "MAP" | "OBSERVATION";
+  scrollProgressGetter?: () => number;
   onCoordinateSelect?: (coord: Coordinate) => void;
   className?: string;
 }
@@ -23,6 +24,7 @@ export const PlanetaryGlobe: React.FC<PlanetaryGlobeProps> = ({
   selectedCoordinate,
   reducedMotion = false,
   viewMode = "GLOBE",
+  scrollProgressGetter,
   onCoordinateSelect,
   className,
 }) => {
@@ -116,6 +118,7 @@ export const PlanetaryGlobe: React.FC<PlanetaryGlobeProps> = ({
       uniform vec3 uSunDirection;
       uniform float uTime;
       uniform float uHoverActive;
+      uniform float uScrollProgress;
 
       float hash(vec2 p) {
         return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123);
@@ -162,6 +165,25 @@ export const PlanetaryGlobe: React.FC<PlanetaryGlobeProps> = ({
           surfaceColor = mix(surfaceColor, highlands, smoothstep(0.58, 0.72, land));
         }
 
+        // --- PHASE 01.7: SCROLL-DRIVEN MODALITIES ---
+        // 1. NDVI / Multispectral (Red/Infrared aesthetic)
+        vec3 ndviColor = mix(vec3(0.05, 0.0, 0.15), vec3(0.8, 0.1, 0.2), smoothstep(0.4, 0.8, land));
+        float ndviMix = smoothstep(0.4, 0.5, uScrollProgress) - smoothstep(0.5, 0.6, uScrollProgress);
+        surfaceColor = mix(surfaceColor, ndviColor, max(0.0, ndviMix));
+
+        // 2. SAR / Radar (Monochrome high-contrast texture)
+        float sarNoise = noise(sphereUv * 20.0);
+        vec3 sarColor = mix(vec3(0.1), vec3(0.8, 0.85, 0.9), sarNoise) * step(0.45, land);
+        float sarMix = smoothstep(0.5, 0.6, uScrollProgress) - smoothstep(0.65, 0.75, uScrollProgress);
+        surfaceColor = mix(surfaceColor, sarColor, max(0.0, sarMix));
+
+        // 3. Change Detection / Data Grid
+        float gridData = step(0.7, fract(vUv.x * 250.0)) * step(0.7, fract(vUv.y * 125.0));
+        vec3 dataColor = vec3(1.0, 0.2, 0.3) * gridData * step(0.45, land);
+        float dataMix = smoothstep(0.65, 0.85, uScrollProgress);
+        surfaceColor = mix(surfaceColor, dataColor, max(0.0, dataMix));
+        // --------------------------------------------
+
         // Faint Coordinate Grid Lines (Appears gently during hover/interaction)
         float latLines = step(0.985, fract(vUv.y * 18.0));
         float lonLines = step(0.985, fract(vUv.x * 36.0));
@@ -170,7 +192,8 @@ export const PlanetaryGlobe: React.FC<PlanetaryGlobeProps> = ({
 
         // Subtle night-side settlement illumination
         float night = 1.0 - diffuse;
-        vec3 nightLights = vec3(0.55, 0.88, 1.0) * step(0.56, land) * night * 0.22;
+        float nightFade = 1.0 - smoothstep(0.3, 0.5, uScrollProgress); // Turn off lights as we analyze data
+        vec3 nightLights = vec3(0.55, 0.88, 1.0) * step(0.56, land) * night * 0.22 * nightFade;
 
         // Illumination
         vec3 finalColor = (surfaceColor * (diffuse * 0.92 + 0.14)) + nightLights;
@@ -191,6 +214,7 @@ export const PlanetaryGlobe: React.FC<PlanetaryGlobeProps> = ({
         uSunDirection: { value: new THREE.Vector3(1.6, 0.7, 1.6).normalize() },
         uTime: { value: 0 },
         uHoverActive: { value: 0.0 },
+        uScrollProgress: { value: 0.0 },
       },
     });
 
@@ -390,13 +414,18 @@ export const PlanetaryGlobe: React.FC<PlanetaryGlobeProps> = ({
       const delta = clock.getDelta();
       earthMaterial.uniforms.uTime.value += delta;
 
+      const p = scrollProgressGetter ? scrollProgressGetter() : 0;
+      earthMaterial.uniforms.uScrollProgress.value = p;
+
       // Handle Continuous Orbit vs Camera Dive
       if (viewMode === "MAP") {
         // Dive toward surface
         targetCamZ = 1.48;
       } else {
-        // Planetary view
-        if (targetCamZ < 2.0) targetCamZ = initialCamZ;
+        // Planetary cinematic dive driven by scroll timeline
+        // 0.0 -> initialCamZ (3.6)
+        // 0.85 -> 1.5
+        targetCamZ = Math.max(1.5, initialCamZ - (p * 2.5));
       }
 
       // Smooth camera position interpolation
@@ -405,7 +434,7 @@ export const PlanetaryGlobe: React.FC<PlanetaryGlobeProps> = ({
       // Slow planetary rotation if motion enabled and not dragging
       const idleTime = Date.now() - lastInteractionTime;
       if (rotationEnabled && !reducedMotion && idleTime > 2000 && !isDragging) {
-        targetRotationY += 0.0006;
+        targetRotationY += 0.0006 + (p * 0.002); // Accelerate rotation as we scroll down
       }
 
       // Smooth rotational damping
@@ -462,7 +491,7 @@ export const PlanetaryGlobe: React.FC<PlanetaryGlobeProps> = ({
         dom.parentNode.removeChild(dom);
       }
     };
-  }, [interactive, rotationEnabled, selectedCoordinate, reducedMotion, viewMode, onCoordinateSelect, webglError]);
+  }, [interactive, rotationEnabled, selectedCoordinate, reducedMotion, viewMode, onCoordinateSelect, webglError, scrollProgressGetter]);
 
   return (
     <div
