@@ -3,8 +3,7 @@
 import React, { useRef, useEffect } from "react";
 import * as THREE from "three";
 import { Coordinate } from "@/types/map";
-import { GlobeFallback } from "./GlobeFallback";
-import { detectWebGLSupport } from "@/lib/browser/webgl";
+import { detectWebGLSupport, getWebGLDiagnostics, WebGLDiagnosticInfo } from "@/lib/browser/webgl";
 import { normalizeLongitude } from "@/lib/utils/coordinates";
 import { useWorkspaceStore } from "@/stores/workspaceStore";
 
@@ -28,14 +27,22 @@ export const PlanetaryGlobe: React.FC<PlanetaryGlobeProps> = ({
   className,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const webglSupported = useRef<boolean>(true);
+  const [webglError, setWebglError] = React.useState<string | null>(null);
+  const [diagnostics, setDiagnostics] = React.useState<WebGLDiagnosticInfo | null>(null);
 
   useEffect(() => {
-    webglSupported.current = detectWebGLSupport();
+    const isSupported = detectWebGLSupport();
+    const info = getWebGLDiagnostics();
+    setDiagnostics(info);
+
+    if (!isSupported) {
+      setWebglError("WebGL support not detected.");
+      useWorkspaceStore.getState().setViewMode("MAP");
+    }
   }, []);
 
   useEffect(() => {
-    if (!containerRef.current || !webglSupported.current) return;
+    if (!containerRef.current || webglError) return;
 
     const container = containerRef.current;
     const width = container.clientWidth || window.innerWidth || 1200;
@@ -60,7 +67,10 @@ export const PlanetaryGlobe: React.FC<PlanetaryGlobeProps> = ({
       renderer.setSize(width, height);
       container.appendChild(renderer.domElement);
     } catch (e) {
+      const errorMsg = e instanceof Error ? e.message : String(e);
       console.warn("Failed to initialize WebGLRenderer:", e);
+      setWebglError(`Renderer init failed: ${errorMsg}`);
+      useWorkspaceStore.getState().setViewMode("MAP");
       return;
     }
 
@@ -452,18 +462,35 @@ export const PlanetaryGlobe: React.FC<PlanetaryGlobeProps> = ({
         dom.parentNode.removeChild(dom);
       }
     };
-  }, [interactive, rotationEnabled, selectedCoordinate, reducedMotion, viewMode, onCoordinateSelect]);
-
-  if (!webglSupported.current) {
-    return <GlobeFallback selectedCoordinate={selectedCoordinate} />;
-  }
+  }, [interactive, rotationEnabled, selectedCoordinate, reducedMotion, viewMode, onCoordinateSelect, webglError]);
 
   return (
     <div
       ref={containerRef}
-      className={`relative w-full h-full overflow-hidden cursor-grab active:cursor-grabbing select-none ${className || ""}`}
+      className={`relative w-full h-full overflow-hidden select-none ${interactive && !webglError ? 'cursor-grab active:cursor-grabbing' : ''} ${className || ""}`}
       role="region"
       aria-label="3D Interactive Planetary Earth Model"
-    />
+    >
+      {/* Dev Diagnostic Overlay */}
+      {process.env.NODE_ENV !== "production" && diagnostics && (
+        <div className="absolute top-4 right-4 z-50 bg-black/90 border border-space-faint p-4 font-mono text-[10px] text-space-white w-72 pointer-events-none">
+          <div className="font-bold mb-2 text-cyan-accent border-b border-space-faint pb-1">WEBGL DIAGNOSTIC (DEV ONLY)</div>
+          <div className="flex justify-between"><span>SUPPORTED:</span> <span>{diagnostics.supported ? "YES" : "NO"}</span></div>
+          <div className="flex justify-between mt-1"><span>RENDERER:</span> <span className="text-right truncate ml-2" title={diagnostics.renderer}>{diagnostics.renderer}</span></div>
+          <div className="flex justify-between mt-1"><span>VENDOR:</span> <span className="text-right truncate ml-2" title={diagnostics.vendor}>{diagnostics.vendor}</span></div>
+          {webglError && (
+            <div className="mt-2 text-red-500 font-bold whitespace-normal">
+              ERROR: {webglError}
+            </div>
+          )}
+          {containerRef.current && (
+            <div className="mt-2 pt-2 border-t border-space-faint text-space-muted flex flex-col gap-1">
+              <div className="flex justify-between"><span>CANVAS CSS:</span> <span>{containerRef.current.clientWidth}x{containerRef.current.clientHeight}</span></div>
+              <div className="flex justify-between"><span>DPR:</span> <span>{typeof window !== "undefined" ? window.devicePixelRatio : 1}</span></div>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
   );
 };

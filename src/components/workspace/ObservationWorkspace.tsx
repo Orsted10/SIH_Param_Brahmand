@@ -3,7 +3,6 @@
 import React from "react";
 import { useWorkspaceStore } from "@/stores/workspaceStore";
 import { PlanetaryGlobe } from "../globe/PlanetaryGlobe";
-import { GlobeErrorBoundary } from "../globe/GlobeErrorBoundary";
 import { EarthMap } from "../map/EarthMap";
 import { ObservationViewer } from "../upload/ObservationViewer";
 import { AskTheEarth } from "../composer/AskTheEarth";
@@ -105,13 +104,11 @@ export const ObservationWorkspace: React.FC = () => {
               viewMode === "GLOBE" ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
             )}
           >
-            <GlobeErrorBoundary selectedCoordinate={selectedLocation}>
-              <PlanetaryGlobe
-                selectedCoordinate={selectedLocation}
-                reducedMotion={reducedMotion}
-                viewMode={viewMode}
-              />
-            </GlobeErrorBoundary>
+            <PlanetaryGlobe
+              selectedCoordinate={selectedLocation}
+              reducedMotion={reducedMotion}
+              viewMode={viewMode}
+            />
           </div>
 
           {/* 2D Geospatial Basemap Layer */}
