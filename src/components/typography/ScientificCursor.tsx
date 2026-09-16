@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState } from "react";
 import { useWorkspaceStore } from "@/stores/workspaceStore";
-import { formatLatitude, formatLongitude } from "@/lib/utils/coordinates";
 
 export const ScientificCursor: React.FC = () => {
   const { hoveredCoordinate } = useWorkspaceStore();
@@ -29,17 +28,24 @@ export const ScientificCursor: React.FC = () => {
 
   return (
     <div
-      className="fixed top-0 left-0 pointer-events-none z-50 transition-transform duration-75 ease-out select-none"
+      className="fixed top-0 left-0 pointer-events-none z-[100] transition-transform duration-75 ease-out select-none"
       style={{
         transform: `translate3d(${pos.x}px, ${pos.y}px, 0)`,
       }}
     >
-      {/* Live Raycasted Coordinate Badge when hovering over Earth surface */}
+      {/* Live Raycasted Coordinate Badge with Minimal Crosshair */}
       {hoveredCoordinate && (
-        <div className="absolute top-4 left-4 bg-void-0/90 backdrop-blur-sm border border-cyan-accent/50 px-2 py-1 rounded-sm text-[10px] font-mono text-cyan-accent whitespace-nowrap shadow-lg flex items-center gap-2">
-          <span>{formatLatitude(hoveredCoordinate.latitude, 2)}</span>
-          <span className="text-space-faint">/</span>
-          <span>{formatLongitude(hoveredCoordinate.longitude, 2)}</span>
+        <div className="relative flex items-center justify-center">
+          {/* Subtle Crosshair */}
+          <svg width="24" height="24" viewBox="0 0 24 24" className="absolute -left-3 -top-3 text-space-white/50">
+            <line x1="12" y1="4" x2="12" y2="20" stroke="currentColor" strokeWidth="0.5" />
+            <line x1="4" y1="12" x2="20" y2="12" stroke="currentColor" strokeWidth="0.5" />
+          </svg>
+          
+          <div className="absolute top-2 left-4 text-[9px] font-mono whitespace-nowrap text-space-white uppercase tracking-widest mix-blend-difference">
+            <div>LAT {hoveredCoordinate.latitude.toFixed(4)}°</div>
+            <div>LON {hoveredCoordinate.longitude.toFixed(4)}°</div>
+          </div>
         </div>
       )}
     </div>

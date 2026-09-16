@@ -3,7 +3,7 @@
 import React, { useState, useRef } from "react";
 import { useWorkspaceStore } from "@/stores/workspaceStore";
 import { formatBytes } from "@/lib/files/fileUtils";
-import { ArrowLeft, ZoomIn, ZoomOut, RotateCcw, Layers } from "lucide-react";
+import { ZoomIn, ZoomOut, RotateCcw, Layers } from "lucide-react";
 
 export const ObservationViewer: React.FC = () => {
   const { uploadedAssets, selectedDataset, setViewMode } = useWorkspaceStore();
@@ -62,32 +62,46 @@ export const ObservationViewer: React.FC = () => {
   return (
     <div className="relative w-full h-full bg-void-0 overflow-hidden font-mono select-none">
       {/* Return to Earth Orbit Button */}
-      <div className="absolute top-16 left-6 z-20">
+      <div className="absolute top-12 left-6 z-20 font-mono">
         <button
           onClick={() => setViewMode("GLOBE")}
-          className="flex items-center gap-2 px-3 py-1.5 text-xs text-space-muted hover:text-cyan-accent bg-void-1/80 backdrop-blur-md border border-panel-hairline hover:border-cyan-accent/50 rounded-sm transition-all focus:outline-none focus:ring-1 focus:ring-cyan-accent"
+          className="flex items-center gap-2 px-2 py-1 text-[10px] text-space-muted hover:text-space-white transition-colors focus:outline-none uppercase tracking-widest"
         >
-          <ArrowLeft className="w-3.5 h-3.5" />
-          <span className="tracking-widest uppercase text-[11px]">
-            RETURN TO PLANETARY VIEW
-          </span>
+          <span>← RETURN TO ORBIT</span>
         </button>
       </div>
 
       {/* Edge Technical Metadata Typography (Rules: No cards) */}
-      <div className="absolute top-16 right-6 z-20 text-right space-y-1">
+      <div className="absolute top-12 right-6 z-20 text-right space-y-0.5 font-mono">
         <div className="text-[10px] text-space-faint uppercase tracking-widest">
-          OBSERVATION 01 · LOCAL RASTER
+          OBSERVATION
         </div>
-        <div className="text-sm font-semibold tracking-wider text-space-white truncate max-w-xs">
+        <div className="text-xs font-semibold tracking-wider text-space-white truncate max-w-[200px]">
           {activeAsset.name}
         </div>
-        <div className="text-xs text-cyan-accent/80 tracking-wide">
-          {activeAsset.kind} · {formatBytes(activeAsset.sizeBytes)}
-          {activeAsset.dimensions && ` · ${activeAsset.dimensions.width} × ${activeAsset.dimensions.height}`}
+        <div className="text-[10px] text-space-muted tracking-widest pt-2">
+          FORMAT
         </div>
-        <div className="text-[10px] text-space-faint tracking-widest pt-1">
-          LOCAL IMAGE · GEOGRAPHIC REFERENCE UNAVAILABLE (Phase 01)
+        <div className="text-xs text-space-white tracking-wider">
+          {activeAsset.kind}
+        </div>
+        <div className="text-[10px] text-space-muted tracking-widest pt-2">
+          SIZE
+        </div>
+        <div className="text-xs text-space-white tracking-wider">
+          {formatBytes(activeAsset.sizeBytes)}
+        </div>
+        <div className="text-[10px] text-space-muted tracking-widest pt-2">
+          DIMENSIONS
+        </div>
+        <div className="text-xs text-space-white tracking-wider">
+          {activeAsset.dimensions ? `${activeAsset.dimensions.width} × ${activeAsset.dimensions.height}` : "UNKNOWN"}
+        </div>
+        <div className="text-[10px] text-space-muted tracking-widest pt-2">
+          CRS
+        </div>
+        <div className="text-xs text-space-white tracking-wider">
+          UNKNOWN
         </div>
       </div>
 
@@ -134,35 +148,48 @@ export const ObservationViewer: React.FC = () => {
         )}
       </div>
 
-      {/* Contextual Canvas Navigation Tools (Bottom Left) */}
-      <div className="absolute bottom-8 left-6 z-20 flex items-center gap-2 bg-void-1/80 backdrop-blur-md border border-panel-hairline p-1 rounded-sm text-space-muted">
+      {/* Contextual Canvas Navigation Tools (Bottom Left) - No Backgrounds */}
+      <div className="absolute bottom-12 left-6 z-20 flex items-center gap-4 text-space-muted font-mono">
         <button
           onClick={handleZoomIn}
           title="Zoom In"
           aria-label="Zoom In"
-          className="p-1.5 hover:text-cyan-accent transition-colors"
+          className="hover:text-space-white transition-colors flex items-center gap-1 text-[10px] tracking-widest"
         >
           <ZoomIn className="w-3.5 h-3.5" />
+          <span>IN</span>
         </button>
         <button
           onClick={handleZoomOut}
           title="Zoom Out"
           aria-label="Zoom Out"
-          className="p-1.5 hover:text-cyan-accent transition-colors"
+          className="hover:text-space-white transition-colors flex items-center gap-1 text-[10px] tracking-widest"
         >
           <ZoomOut className="w-3.5 h-3.5" />
+          <span>OUT</span>
         </button>
         <button
           onClick={handleReset}
           title="Reset View"
           aria-label="Reset View"
-          className="p-1.5 hover:text-cyan-accent transition-colors"
+          className="hover:text-space-white transition-colors flex items-center gap-1 text-[10px] tracking-widest"
         >
           <RotateCcw className="w-3.5 h-3.5" />
+          <span>RESET</span>
         </button>
-        <span className="text-[10px] text-space-faint px-2 border-l border-panel-hairline">
+        <span className="text-[10px] text-space-faint tracking-widest">
           {Math.round(scale * 100)}%
         </span>
+      </div>
+
+      {/* Analysis Invocation Line (Bottom Right) */}
+      <div className="absolute bottom-12 right-6 z-20 font-mono text-right">
+        <button className="group flex flex-col items-end gap-1 text-[10px] text-space-muted tracking-widest hover:text-space-white transition-colors focus:outline-none uppercase">
+          <span>UNDERSTAND THIS OBSERVATION</span>
+          <span className="opacity-40 group-hover:opacity-100 transition-opacity">
+            ────────────────────────────────────────
+          </span>
+        </button>
       </div>
     </div>
   );

@@ -7,10 +7,9 @@ import { GlobeErrorBoundary } from "../globe/GlobeErrorBoundary";
 import { EarthMap } from "../map/EarthMap";
 import { ObservationViewer } from "../upload/ObservationViewer";
 import { AskTheEarth } from "../composer/AskTheEarth";
-import { formatCoordinates } from "@/lib/utils/coordinates";
-import { SYSTEM_BRAND } from "@/lib/constants/palette";
-import { Map, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
+import { classifyFile, extractImageDimensions, urlManager } from "@/lib/files/fileUtils";
+import { ImageryAsset } from "@/types/imagery";
 
 export const ObservationWorkspace: React.FC = () => {
   const {
@@ -18,11 +17,81 @@ export const ObservationWorkspace: React.FC = () => {
     setViewMode,
     selectedLocation,
     reducedMotion,
-    uploadedAssets,
+    addUploadedAsset,
   } = useWorkspaceStore();
 
+  const [isDragging, setIsDragging] = React.useState(false);
+
+  // Auto-transition to Map mode when a location is selected
+  React.useEffect(() => {
+    if (selectedLocation && viewMode === "GLOBE") {
+      const timer = setTimeout(() => {
+        setViewMode("MAP");
+      }, 1200); // Wait for Earth to rotate/zoom before diving
+      return () => clearTimeout(timer);
+    }
+  }, [selectedLocation, viewMode, setViewMode]);
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
+
+  const handleDrop = async (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const files = e.dataTransfer.files;
+    if (!files || files.length === 0) return;
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const classification = classifyFile(file);
+      const dimensions = await extractImageDimensions(file);
+      let previewUrl: string | null = null;
+      if (classification.isPreviewable) {
+        previewUrl = urlManager.create(file);
+      }
+      const asset: ImageryAsset = {
+        id: `ast-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+        name: file.name,
+        mimeType: file.type || "application/octet-stream",
+        sizeBytes: file.size,
+        lastModified: file.lastModified,
+        kind: classification.kind,
+        status: classification.status,
+        statusMessage: classification.statusMessage,
+        previewUrl,
+        dimensions,
+        createdAt: new Date().toISOString(),
+      };
+      addUploadedAsset(asset);
+    }
+    setViewMode("OBSERVATION");
+  };
+
   return (
-    <main className="relative w-screen h-[100dvh] overflow-hidden bg-void-0 select-none">
+    <main
+      className="relative w-screen h-[100dvh] overflow-hidden bg-void-0 select-none"
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+    >
+      {/* Global Drag Overlay */}
+      <div
+        className={cn(
+          "absolute inset-0 z-[100] flex items-center justify-center bg-void-0/80 backdrop-blur-md transition-opacity duration-300 pointer-events-none",
+          isDragging ? "opacity-100" : "opacity-0"
+        )}
+      >
+        <div className="text-2xl md:text-4xl font-light tracking-[0.3em] text-space-white uppercase font-mono">
+          INSERT OBSERVATION
+        </div>
+      </div>
       {/* 1. Observation View Mode (Full-Bleed Imagery Canvas) */}
       {viewMode === "OBSERVATION" ? (
         <ObservationViewer />
@@ -57,60 +126,23 @@ export const ObservationWorkspace: React.FC = () => {
             )}
           </div>
 
-          {/* 3. Negative Space Editorial Typography (Only visible in Globe View) */}
+          {/* 3. Minimal Selected Location Annotation & Query Component */}
           {viewMode === "GLOBE" && (
             <div className="pointer-events-none absolute inset-0 z-20 flex flex-col justify-between p-8 sm:p-12 md:p-16">
-              {/* Top Editorial Headline (Directly over negative space, ZERO cards) */}
+              {/* Top Left: Minimal Clicked Coordinate Annotation */}
               <div className="mt-12 sm:mt-16 max-w-md select-none font-mono">
-                <div className="text-[10px] text-cyan-accent tracking-widest uppercase font-semibold mb-2">
-                  PLANETARY OBSERVATION METRIC · EPSG:4326
-                </div>
-                <h1 className="text-4xl sm:text-6xl md:text-7xl font-extralight tracking-tighter text-space-white leading-[0.9]">
-                  UNDERSTAND<br />
-                  <span className="font-normal text-cyan-accent">THE EARTH.</span>
-                </h1>
-                <p className="text-xs text-space-muted font-mono mt-4 max-w-xs leading-relaxed">
-                  {SYSTEM_BRAND.heroDescription}
-                </p>
-
-                {/* Micro Monospace Coordinate Readout */}
                 {selectedLocation && (
-                  <div className="mt-6 flex flex-col gap-1 border-l border-cyan-accent/50 pl-3">
-                    <span className="text-[9px] text-space-faint tracking-widest uppercase">
-                      STUDY POINT CALIBRATION
+                  <div className="flex flex-col gap-1 border-l border-space-faint pl-3 animate-in fade-in slide-in-from-left-4 duration-700">
+                    <span className="text-xs text-space-white tracking-widest font-semibold uppercase">
+                      LAT {selectedLocation.latitude.toFixed(4)}°
                     </span>
-                    <span className="text-xs text-space-white tracking-widest font-semibold">
-                      {formatCoordinates(selectedLocation.latitude, selectedLocation.longitude, 4)}
+                    <span className="text-xs text-space-white tracking-widest font-semibold uppercase">
+                      LON {selectedLocation.longitude.toFixed(4)}°
                     </span>
-                    <span className="text-[10px] text-cyan-accent/80 tracking-wider">
-                      {selectedLocation.label || "INDIA DEFAULT REGION"}
+                    <span className="text-[10px] text-space-muted tracking-wider uppercase mt-1">
+                      {selectedLocation.label || "INDIA"}
                     </span>
                   </div>
-                )}
-              </div>
-
-              {/* Center Right: Quick Surface Dive Trigger */}
-              <div className="self-end mb-8 pointer-events-auto font-mono">
-                <button
-                  onClick={() => setViewMode("MAP")}
-                  className="group flex items-center gap-3 px-4 py-2 bg-void-1/70 backdrop-blur-md border border-panel-hairline hover:border-cyan-accent/50 rounded-sm text-xs text-space-muted hover:text-cyan-accent transition-all focus:outline-none"
-                  aria-label="Inspect surface in full-screen 2D map view"
-                >
-                  <Map className="w-3.5 h-3.5 text-cyan-accent" />
-                  <span className="tracking-widest uppercase text-[11px]">
-                    SURFACE MAP VIEW
-                  </span>
-                  <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
-                </button>
-
-                {uploadedAssets.length > 0 && (
-                  <button
-                    onClick={() => setViewMode("OBSERVATION")}
-                    className="mt-2 w-full flex items-center justify-between px-4 py-1.5 bg-void-1/70 backdrop-blur-md border border-cyan-accent/30 hover:border-cyan-accent rounded-sm text-[11px] text-cyan-accent hover:bg-cyan-soft/20 transition-all"
-                  >
-                    <span>VIEW OBSERVATION</span>
-                    <span className="text-[9px] text-space-faint">({uploadedAssets.length})</span>
-                  </button>
                 )}
               </div>
 

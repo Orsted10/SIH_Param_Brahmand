@@ -5,9 +5,8 @@ import maplibregl, { Map as MapLibreMap, Marker } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { useWorkspaceStore } from "@/stores/workspaceStore";
 import { MAP_CONFIG, DEFAULT_STUDY_COORDINATE } from "@/lib/map/mapConfig";
-import { formatCoordinates } from "@/lib/utils/coordinates";
 import { MapErrorBoundary } from "./MapErrorBoundary";
-import { Compass, Box, ArrowLeft, Plus, Minus, RotateCcw } from "lucide-react";
+import { Compass, Box, Plus, Minus, RotateCcw } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 
 interface EarthMapProps {
@@ -182,30 +181,22 @@ export const EarthMap: React.FC<EarthMapProps> = ({ className, onReturnToOrbit }
         <div className="absolute inset-0 pointer-events-none bg-void-0/25 mix-blend-multiply" />
 
         {/* Top Floating Return to Orbit Button */}
-        <div className="absolute top-16 left-6 z-20 font-mono">
+        <div className="absolute top-12 left-6 z-20 font-mono">
           <button
             onClick={handleReturnOrbit}
-            className="flex items-center gap-2 px-3 py-1.5 text-xs text-space-muted hover:text-cyan-accent bg-void-1/85 backdrop-blur-md border border-panel-hairline hover:border-cyan-accent/50 rounded-sm transition-all focus:outline-none focus:ring-1 focus:ring-cyan-accent"
+            className="flex items-center gap-2 px-2 py-1 text-[10px] text-space-muted hover:text-space-white transition-colors focus:outline-none uppercase tracking-widest"
             aria-label="Return to Planetary Orbit View"
           >
-            <ArrowLeft className="w-3.5 h-3.5" />
-            <span className="tracking-widest uppercase text-[11px]">RETURN TO ORBIT</span>
+            <span>← RETURN TO ORBIT</span>
           </button>
         </div>
 
         {/* Selected Coordinates Readout (Bottom Left) */}
         {selectedLocation && (
-          <div className="absolute bottom-6 left-6 z-20 font-mono text-xs">
-            <div className="flex items-center gap-2 text-[10px] text-space-faint tracking-widest uppercase mb-0.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-cyan-accent" />
-              <span>SELECTED SURFACE POINT</span>
-            </div>
-            <div className="text-sm font-semibold tracking-wider text-space-white">
-              {formatCoordinates(selectedLocation.latitude, selectedLocation.longitude, 4)}
-            </div>
-            <div className="text-[10px] text-cyan-accent/80 tracking-widest mt-0.5">
-              {selectedLocation.label || "WGS84 REFERENCE"}
-            </div>
+          <div className="absolute bottom-12 left-6 z-20 font-mono flex flex-col gap-1 text-[9px] uppercase tracking-widest mix-blend-difference text-space-white">
+            <span>LAT {selectedLocation.latitude.toFixed(4)}°</span>
+            <span>LON {selectedLocation.longitude.toFixed(4)}°</span>
+            <span>{selectedLocation.label || "WGS84"}</span>
           </div>
         )}
 
@@ -214,7 +205,7 @@ export const EarthMap: React.FC<EarthMapProps> = ({ className, onReturnToOrbit }
           onMouseEnter={() => setControlsHovered(true)}
           onMouseLeave={() => setControlsHovered(false)}
           className={cn(
-            "absolute top-20 right-6 z-20 flex flex-col gap-1 p-1 bg-void-1/85 backdrop-blur-md border border-panel-hairline rounded-sm transition-opacity duration-300 font-mono",
+            "absolute top-24 right-6 z-20 flex flex-col gap-3 transition-opacity duration-300 font-mono",
             controlsHovered ? "opacity-100" : "opacity-40 hover:opacity-100"
           )}
         >
@@ -222,46 +213,44 @@ export const EarthMap: React.FC<EarthMapProps> = ({ className, onReturnToOrbit }
             onClick={handleZoomIn}
             aria-label="Zoom In"
             title="Zoom In"
-            className="p-1.5 text-space-muted hover:text-cyan-accent rounded transition-colors focus:outline-none"
+            className="text-space-muted hover:text-space-white transition-colors focus:outline-none"
           >
-            <Plus className="w-3.5 h-3.5" />
+            <Plus className="w-4 h-4" />
           </button>
           <button
             onClick={handleZoomOut}
             aria-label="Zoom Out"
             title="Zoom Out"
-            className="p-1.5 text-space-muted hover:text-cyan-accent rounded transition-colors focus:outline-none"
+            className="text-space-muted hover:text-space-white transition-colors focus:outline-none"
           >
-            <Minus className="w-3.5 h-3.5" />
+            <Minus className="w-4 h-4" />
           </button>
-          <div className="w-full h-[1px] bg-panel-hairline" />
           <button
             onClick={handleResetNorth}
             aria-label="Reset North"
             title="Reset Orientation"
-            className="p-1.5 text-space-muted hover:text-cyan-accent rounded transition-colors focus:outline-none"
+            className="text-space-muted hover:text-space-white transition-colors focus:outline-none"
           >
-            <Compass className="w-3.5 h-3.5" />
+            <Compass className="w-4 h-4" />
           </button>
           <button
             onClick={handleResetIndia}
             aria-label="Reset View"
             title="Reset to India"
-            className="p-1.5 text-space-muted hover:text-cyan-accent rounded transition-colors focus:outline-none"
+            className="text-space-muted hover:text-space-white transition-colors focus:outline-none"
           >
-            <RotateCcw className="w-3.5 h-3.5" />
+            <RotateCcw className="w-4 h-4" />
           </button>
-          <div className="w-full h-[1px] bg-panel-hairline" />
           <button
             onClick={handleTogglePitch}
             aria-label="Toggle 3D Pitch"
             title="Toggle 3D Perspective"
             className={cn(
-              "p-1.5 rounded transition-colors focus:outline-none",
-              is3dPitch ? "text-cyan-accent bg-cyan-soft/30 font-bold" : "text-space-muted hover:text-cyan-accent"
+              "transition-colors focus:outline-none",
+              is3dPitch ? "text-space-white" : "text-space-muted hover:text-space-white"
             )}
           >
-            <Box className="w-3.5 h-3.5" />
+            <Box className="w-4 h-4" />
           </button>
         </div>
       </div>
